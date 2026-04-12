@@ -64,10 +64,21 @@ export default function HomePage() {
     <div className="min-h-screen bg-white dot-grid">
 
       {/* ── TOP HERO BANNER ─────────────────────────────────────── */}
-      <div className="bg-black text-white">
-        <div className="max-w-5xl mx-auto px-4 py-8 sm:py-12 flex flex-col items-center text-center gap-5">
+      <div className="relative text-white overflow-hidden bg-black">
+        {/* Background Image Overlay */}
+        <div className="absolute inset-0 z-0">
+          <Image
+            src="/image.png"
+            alt="Padanthara Markaz Background"
+            fill
+            className="object-cover object-center opacity-40"
+            priority
+          />
+        </div>
+
+        <div className="relative z-10 max-w-5xl mx-auto px-4 py-12 sm:py-20 flex flex-col items-center text-center gap-5">
           {/* Logo */}
-          <div className="relative w-20 h-20 sm:w-28 sm:h-28 flex-shrink-0 bg-white rounded-2xl p-2 shadow-lg">
+          <div className="relative w-20 h-20 sm:w-28 sm:h-28 flex-shrink-0 bg-white rounded-2xl p-2 shadow-2xl">
             <Image
               src="/logo.png"
               alt="Padanthara Markaz Logo"
@@ -79,13 +90,13 @@ export default function HomePage() {
 
           {/* Title */}
           <div>
-            <h1 className="text-2xl sm:text-4xl md:text-5xl font-black tracking-tight leading-tight uppercase">
+            <h1 className="text-2xl sm:text-4xl md:text-5xl font-black tracking-tight leading-tight uppercase drop-shadow-md">
               Padanthara Markaz
             </h1>
           </div>
 
           {/* Live badge */}
-          <div className="inline-flex items-center gap-2 border border-white/20 rounded-full px-4 py-1.5 text-xs font-semibold tracking-widest">
+          <div className="inline-flex items-center gap-2 border border-white/30 bg-black/30 backdrop-blur-sm rounded-full px-4 py-1.5 text-xs font-semibold tracking-widest shadow-lg">
             <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
             LIVE LEADERBOARD
           </div>
