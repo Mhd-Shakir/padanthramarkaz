@@ -3,8 +3,9 @@ import { connectDB } from '@/lib/mongodb';
 import Admin from '@/models/Admin';
 import { getSession } from '@/lib/auth';
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, context: any) {
   try {
+    const params = await context.params;
     const session = await getSession();
     if (!session || !session.isSuperAdmin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -34,8 +35,9 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, context: any) {
   try {
+    const params = await context.params;
     const session = await getSession();
     if (!session || !session.isSuperAdmin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
