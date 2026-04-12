@@ -91,14 +91,13 @@ export default function SuperAdminPage() {
 
   const fetchSummary = useCallback(async () => {
     try {
-      const res = await fetch('/api/leaderboard');
+      const res = await fetch('/api/stats');
       const data = await res.json();
-      const active = (data.leaderboard || []).filter((a: { userCount: number }) => a.userCount >= 0).length;
       setSummary({
-        totalAdmins: data.stats?.totalAdmins || 0,
-        totalUsers: data.stats?.totalUsers || 0,
-        totalAmount: data.stats?.totalAmount || 0,
-        activeAdmins: active,
+        totalAdmins: data.totalAdmins || 0,
+        totalUsers: data.totalUsers || 0,
+        totalAmount: data.totalAmount || 0,
+        activeAdmins: data.activeAdmins || 0,
       });
     } catch {}
   }, []);
