@@ -12,16 +12,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    if (session.isSuperAdmin) {
+    await connectDB();
+    const { name, place, contact, amount, adminId } = await req.json();
+
+    if (session.isSuperAdmin && !adminId) {
       return NextResponse.json(
-        { error: 'Super Admin cannot add users directly. Use an admin account.' },
-        { status: 403 }
+        { error: 'Super Admin must select an Admin to assign the user to.' },
+        { status: 400 }
       );
     }
-
-    await connectDB();
-
-    const { name, place, contact, amount } = await req.json();
 
     if (!name || !place || !contact || amount === undefined) {
       return NextResponse.json(
@@ -35,8 +34,13 @@ export async function POST(req: NextRequest) {
       place: place.trim(),
       contact: contact.trim(),
       amount: Number(amount),
-      createdBy: session.adminId,
+      createdBy: session.isSuperAdmin ? adminId : session.adminId,
     });
+
+    if (session.isSuperAdmin) {
+      // populate createdBy since super admin needs it
+      await user.populate('createdBy', 'name place');
+    }
 
     return NextResponse.json(
       { success: true, user },

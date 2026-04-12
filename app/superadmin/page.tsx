@@ -46,6 +46,8 @@ export default function SuperAdminPage() {
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [isAddingAdmin, setIsAddingAdmin] = useState(false);
   const [newAdminForm, setNewAdminForm] = useState({ name: '', place: '', phone: '' });
+  const [isAddingUser, setIsAddingUser] = useState(false);
+  const [newUserForm, setNewUserForm] = useState({ name: '', place: '', contact: '', amount: '', adminId: '' });
 
   // Users state
   const [users, setUsers] = useState<User[]>([]);
@@ -180,6 +182,33 @@ export default function SuperAdminPage() {
       fetchSummary();
     } catch {
       toast('Failed to delete admin', 'error');
+    } finally {
+      setProcessingId(null);
+    }
+  }
+
+  async function handleCreateUser(e: React.FormEvent) {
+    e.preventDefault();
+    if (!newUserForm.name.trim() || !newUserForm.place.trim() || !newUserForm.contact.trim() || !newUserForm.adminId) {
+      toast('Please fill all fields and select an admin.', 'error');
+      return;
+    }
+    setProcessingId('new_user');
+    try {
+      const res = await fetch('/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...newUserForm, amount: Number(newUserForm.amount) }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed');
+      toast('User added successfully', 'success');
+      setIsAddingUser(false);
+      setNewUserForm({ name: '', place: '', contact: '', amount: '', adminId: '' });
+      fetchUsers(1);
+      fetchSummary();
+    } catch (err: any) {
+      toast(err.message || 'Failed to create user', 'error');
     } finally {
       setProcessingId(null);
     }
@@ -527,10 +556,18 @@ export default function SuperAdminPage() {
           <div className="bg-white border border-neutral-200 rounded-xl shadow-sm overflow-hidden animate-fade-in">
             <div className="px-5 py-4 border-b border-neutral-100 flex items-center justify-between">
               <h2 className="font-black text-base">All Users (Global)</h2>
-              <button
-                onClick={() => fetchUsers(userPagination.page)}
-                className="text-xs border border-neutral-200 rounded px-3 py-1.5 hover:bg-neutral-50 transition-colors font-medium"
-              >↻ Refresh</button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setIsAddingUser(true)}
+                  className="text-xs bg-black text-white rounded px-3 py-1.5 hover:bg-neutral-800 transition-colors font-medium"
+                >
+                  + Add User
+                </button>
+                <button
+                  onClick={() => fetchUsers(userPagination.page)}
+                  className="text-xs border border-neutral-200 rounded px-3 py-1.5 hover:bg-neutral-50 transition-colors font-medium"
+                >↻ Refresh</button>
+              </div>
             </div>
 
             {/* Mobile View */}
@@ -554,15 +591,35 @@ export default function SuperAdminPage() {
                       </div>
                       <p className="font-bold text-sm text-black">{formatAmount(user.amount)}</p>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <a href={`tel:${user.contact}`} className="font-mono text-xs text-black underline underline-offset-2 decoration-neutral-300 hover:decoration-black active:text-neutral-600 transition-colors">
-                        {user.contact}
-                      </a>
-                      <p className="text-[10px] text-neutral-400">
-                        Added by {user.createdBy?.name || '—'} · {new Date(user.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
-                      </p>
+                      {/* Mobile View user info */}
+                      <div className="flex justify-between items-center bg-neutral-50/50 p-2 rounded border border-neutral-100">
+                        <div className="flex flex-col gap-1">
+                          <a href={`tel:${user.contact}`} className="font-mono text-xs text-black underline underline-offset-2 decoration-neutral-300 hover:decoration-black active:text-neutral-600 transition-colors">
+                            {user.contact}
+                          </a>
+                          <p className="text-[10px] text-neutral-400">
+                            Added by <span className="font-semibold text-black">{user.createdBy?.name || '—'}</span> · {new Date(user.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
+                          </p>
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => setEditingUser(user)}
+                            className="flex items-center justify-center w-7 h-7 text-[10px] bg-white font-semibold rounded border border-neutral-200 text-neutral-600 hover:bg-neutral-50 transition-colors shadow-sm"
+                            title="Edit User"
+                          >
+                            ✎
+                          </button>
+                          <button
+                            onClick={() => deleteUser(user._id)}
+                            disabled={processingId === user._id}
+                            className="flex items-center justify-center w-7 h-7 text-[10px] bg-white font-semibold rounded border border-red-200 text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50 shadow-sm"
+                            title="Delete User"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                  </div>
                 ))
               )}
             </div>
@@ -766,6 +823,59 @@ export default function SuperAdminPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Add User Modal */}
+      {isAddingUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="px-5 py-4 border-b border-neutral-100 flex justify-between items-center">
+              <h3 className="font-bold">Add New User</h3>
+              <button onClick={() => setIsAddingUser(false)} className="text-neutral-400 hover:text-black font-bold">✕</button>
+            </div>
+            <div className="overflow-y-auto p-5">
+              <form onSubmit={handleCreateUser} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-neutral-600 mb-1">Assign to Admin</label>
+                  <select 
+                    value={newUserForm.adminId} 
+                    onChange={(e) => setNewUserForm({...newUserForm, adminId: e.target.value})}
+                    className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-black"
+                    required
+                  >
+                    <option value="">Select an Admin...</option>
+                    {admins.map(admin => (
+                      <option key={admin._id} value={admin._id}>{admin.name} ({admin.place})</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-neutral-600 mb-1">User Name</label>
+                  <input type="text" placeholder="e.g. Ahmad" value={newUserForm.name} onChange={(e) => setNewUserForm({...newUserForm, name: e.target.value})} className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-black" required />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-neutral-600 mb-1">Place</label>
+                  <input type="text" placeholder="e.g. Calicut" value={newUserForm.place} onChange={(e) => setNewUserForm({...newUserForm, place: e.target.value})} className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-black" required />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-neutral-600 mb-1">Contact</label>
+                  <input type="tel" placeholder="e.g. 9876543210" value={newUserForm.contact} onChange={(e) => setNewUserForm({...newUserForm, contact: e.target.value})} className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-black" required />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-neutral-600 mb-1">Amount (₹)</label>
+                  <input type="number" placeholder="0" value={newUserForm.amount} onChange={(e) => setNewUserForm({...newUserForm, amount: e.target.value})} className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-black" required />
+                </div>
+                <div className="pt-3 flex justify-end gap-2">
+                  <button type="button" onClick={() => setIsAddingUser(false)} className="px-4 py-2 text-sm font-medium border rounded-lg hover:bg-neutral-50 transition-colors">Cancel</button>
+                  <button type="submit" disabled={processingId === 'new_user'} className="px-4 py-2 text-sm font-medium bg-black text-white rounded-lg hover:bg-neutral-800 disabled:opacity-50 flex gap-2 items-center">
+                    {processingId === 'new_user' && <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
+                    Create User
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}
