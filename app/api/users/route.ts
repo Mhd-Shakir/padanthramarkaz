@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/mongodb';
 import User from '@/models/User';
-import Admin from '@/models/Admin';
 import { getSession } from '@/lib/auth';
+// Explicitly import Admin so its schema is registered with Mongoose before
+// any populate() call — Turbopack tree-shakes unused imports otherwise.
+import '@/models/Admin';
 
 // POST: Add a new user (Admin only)
 export async function POST(req: NextRequest) {
@@ -38,7 +40,6 @@ export async function POST(req: NextRequest) {
     });
 
     if (session.isSuperAdmin) {
-      // populate createdBy since super admin needs it
       await user.populate('createdBy', 'name place');
     }
 
@@ -69,14 +70,12 @@ export async function GET(req: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '20');
     const skip = (page - 1) * limit;
 
-    let query = {};
-    if (!session.isSuperAdmin) {
-      query = { createdBy: session.adminId };
-    }
+    const query = session.isSuperAdmin ? {} : { createdBy: session.adminId };
 
     const [users, total] = await Promise.all([
       User.find(query)
         .populate('createdBy', 'name place')
+        .select('name place contact amount shortCode createdAt createdBy')
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
