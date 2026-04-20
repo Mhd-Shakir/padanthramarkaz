@@ -73,7 +73,7 @@ function QrModal({ target, onClose }: { target: QrTarget; onClose: () => void })
 
   useEffect(() => {
     QRCode.toDataURL(buildUpiUri(target.amount), {
-      width: 200,
+      width: 140,
       margin: 2,
       color: { dark: '#1a1a2e', light: '#ffffff' },
       errorCorrectionLevel: 'H',
@@ -114,7 +114,7 @@ function QrModal({ target, onClose }: { target: QrTarget; onClose: () => void })
   }
 
   function handleWhatsApp() {
-    const msg = `സലാം 👋\n\n*Padanthara Markaz* — Payment Request\n\nDear *${target.name}*,\n\nYour payment of *${formatAmount(target.amount)}* is due.\n\nPlease scan the QR code or click the link below to pay via Google Pay, PhonePe, Paytm or any UPI app:\n\n👉 ${payLink}\n\nJazakallahu Khairan 🤲`;
+    const msg = `السَّلَامُ عَلَيْكُمْ\n\n*Subject: Payment Reminder - Padanthara Markaz*\n\nDear *${target.name}*,\n\nWe hope this message finds you well.\n\nThis is a formal reminder that an amount of *${formatAmount(target.amount)}* is due regarding your account at Padanthara Markaz. To ensure a smooth process, please complete the payment using the link below or by scanning the QR code via any UPI app (Google Pay, PhonePe, Paytm, etc.):\n\n🔗 ${payLink}\n\nYour prompt attention to this matter is greatly appreciated. If you have already processed this payment, please disregard this message.\n\nجَزَاكَ اللَّهُ خَيْرًا\n\n*Administration*\nPadanthara Markaz`;
     window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
   }
 
@@ -139,7 +139,9 @@ function QrModal({ target, onClose }: { target: QrTarget; onClose: () => void })
           borderRadius: '28px 28px 0 0',
           width: '100%',
           maxWidth: '360px',
-          padding: '0 0 32px',
+          maxHeight: '92vh',
+          display: 'flex',
+          flexDirection: 'column',
           boxShadow: '0 -20px 60px rgba(0,0,0,0.4)',
           animation: 'slideUp 0.3s cubic-bezier(0.34,1.56,0.64,1)',
           border: '1px solid rgba(255,255,255,0.08)',
@@ -149,33 +151,38 @@ function QrModal({ target, onClose }: { target: QrTarget; onClose: () => void })
         }}
       >
         {/* Glow blobs */}
-        <div style={{ position:'absolute', top:'-60px', left:'-60px', width:'200px', height:'200px', borderRadius:'50%', background:'radial-gradient(circle, rgba(99,102,241,0.3) 0%, transparent 70%)', filter:'blur(30px)', pointerEvents:'none' }} />
-        <div style={{ position:'absolute', bottom:'-40px', right:'-40px', width:'160px', height:'160px', borderRadius:'50%', background:'radial-gradient(circle, rgba(16,185,129,0.2) 0%, transparent 70%)', filter:'blur(25px)', pointerEvents:'none' }} />
+        <div style={{ position:'absolute', top:'-60px', left:'-60px', width:'200px', height:'200px', borderRadius:'50%', background:'radial-gradient(circle, rgba(99,102,241,0.3) 0%, transparent 70%)', filter:'blur(30px)', pointerEvents:'none', zIndex: 0 }} />
+        <div style={{ position:'absolute', bottom:'-40px', right:'-40px', width:'160px', height:'160px', borderRadius:'50%', background:'radial-gradient(circle, rgba(16,185,129,0.2) 0%, transparent 70%)', filter:'blur(25px)', pointerEvents:'none', zIndex: 0 }} />
 
-        {/* Drag handle */}
-        <div style={{ display:'flex', justifyContent:'center', paddingTop:'12px', paddingBottom:'4px' }}>
-          <div style={{ width:'40px', height:'4px', borderRadius:'2px', background:'rgba(255,255,255,0.2)' }} />
+        {/* Fixed Header / Handle */}
+        <div style={{ position: 'relative', zIndex: 10, flexShrink: 0, paddingBottom: '8px' }}>
+          {/* Drag handle */}
+          <div style={{ display:'flex', justifyContent:'center', paddingTop:'12px', paddingBottom:'4px' }}>
+            <div style={{ width:'40px', height:'4px', borderRadius:'2px', background:'rgba(255,255,255,0.2)' }} />
+          </div>
+
+          {/* Close button */}
+          <button
+            onClick={onClose}
+            style={{
+              position:'absolute', top:'12px', right:'16px',
+              width:'30px', height:'30px', borderRadius:'50%',
+              background:'rgba(255,255,255,0.08)', border:'1px solid rgba(255,255,255,0.12)',
+              color:'rgba(255,255,255,0.6)', fontSize:'16px', cursor:'pointer',
+              display:'flex', alignItems:'center', justifyContent:'center',
+              lineHeight:1, zIndex: 20
+            }}
+            aria-label="Close"
+          >
+            ×
+          </button>
         </div>
 
-        {/* Close button */}
-        <button
-          onClick={onClose}
-          style={{
-            position:'absolute', top:'12px', right:'16px',
-            width:'32px', height:'32px', borderRadius:'50%',
-            background:'rgba(255,255,255,0.08)', border:'1px solid rgba(255,255,255,0.12)',
-            color:'rgba(255,255,255,0.6)', fontSize:'16px', cursor:'pointer',
-            display:'flex', alignItems:'center', justifyContent:'center',
-            lineHeight:1,
-          }}
-          aria-label="Close"
-        >
-          ×
-        </button>
-
-        <div style={{ padding:'12px 24px 0', position:'relative' }}>
+        {/* Scrollable Content */}
+        <div style={{ padding:'0 20px 32px', position:'relative', overflowY:'auto', flex: 1, zIndex: 10, scrollbarWidth:'none', msOverflowStyle:'none' }}>
+          <style>{`::-webkit-scrollbar { display: none; }`}</style>
           {/* Header */}
-          <div style={{ display:'flex', alignItems:'center', gap:'10px', marginBottom:'14px' }}>
+          <div style={{ display:'flex', alignItems:'center', gap:'10px', marginBottom:'10px' }}>
             <div style={{
               width:'38px', height:'38px', borderRadius:'12px',
               background:'linear-gradient(135deg, #6366f1, #8b5cf6)',
@@ -190,7 +197,7 @@ function QrModal({ target, onClose }: { target: QrTarget; onClose: () => void })
           </div>
 
           {/* App badges */}
-          <div style={{ display:'flex', gap:'5px', flexWrap:'wrap', marginBottom:'14px' }}>
+          <div style={{ display:'flex', gap:'5px', flexWrap:'wrap', marginBottom:'12px' }}>
             {['Google Pay','PhonePe','Paytm','BHIM','Amazon Pay'].map((a) => (
               <span key={a} style={{
                 fontSize:'8px', fontWeight:600, padding:'2px 7px', borderRadius:'20px',
@@ -204,7 +211,7 @@ function QrModal({ target, onClose }: { target: QrTarget; onClose: () => void })
           <div style={{
             display:'flex', alignItems:'center', gap:'10px',
             background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.1)',
-            borderRadius:'14px', padding:'10px 12px', marginBottom:'14px',
+            borderRadius:'14px', padding:'8px 10px', marginBottom:'12px',
           }}>
             <div style={{
               width:'36px', height:'36px', borderRadius:'50%',
@@ -224,23 +231,23 @@ function QrModal({ target, onClose }: { target: QrTarget; onClose: () => void })
           </div>
 
           {/* Amount */}
-          <div style={{ textAlign:'center', marginBottom:'16px' }}>
-            <p style={{ fontSize:'10px', color:'rgba(255,255,255,0.4)', textTransform:'uppercase', letterSpacing:'1px', fontWeight:600, marginBottom:'4px' }}>Amount to Pay</p>
+          <div style={{ textAlign:'center', marginBottom:'12px' }}>
+            <p style={{ fontSize:'9px', color:'rgba(255,255,255,0.4)', textTransform:'uppercase', letterSpacing:'1px', fontWeight:600, marginBottom:'2px' }}>Amount to Pay</p>
             <p style={{
-              fontSize:'32px', fontWeight:900, letterSpacing:'-1.5px', lineHeight:1,
+              fontSize:'28px', fontWeight:900, letterSpacing:'-1px', lineHeight:1,
               background:'linear-gradient(135deg,#fff 30%,rgba(255,255,255,0.65))',
               WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', backgroundClip:'text',
             }}>{formatAmount(target.amount)}</p>
-            <p style={{ fontSize:'10px', color:'rgba(255,255,255,0.3)', marginTop:'5px' }}>Fixed amount · auto-filled in QR</p>
+            <p style={{ fontSize:'9px', color:'rgba(255,255,255,0.3)', marginTop:'4px' }}>Fixed amount · auto-filled in QR</p>
           </div>
 
           {/* QR Code */}
-          <div style={{ display:'flex', flexDirection:'column', alignItems:'center', marginBottom:'16px' }}>
+          <div style={{ display:'flex', flexDirection:'column', alignItems:'center', marginBottom:'20px' }}>
             <div style={{
               position:'relative', padding:'10px',
-              background:'#fff', borderRadius:'18px',
-              boxShadow:'0 8px 28px rgba(0,0,0,0.35)',
-              marginBottom:'10px',
+              background:'#fff', borderRadius:'14px',
+              boxShadow:'0 8px 24px rgba(0,0,0,0.3)',
+              marginBottom:'12px',
             }}>
               {/* Corner decorators */}
               {[
@@ -250,37 +257,37 @@ function QrModal({ target, onClose }: { target: QrTarget; onClose: () => void })
                 { bottom:0, right:0, borderBottomWidth:3, borderRightWidth:3 },
               ].map((s, i) => (
                 <div key={i} style={{
-                  position:'absolute', width:'16px', height:'16px',
+                  position:'absolute', width:'14px', height:'14px',
                   borderColor:'#6366f1', borderStyle:'solid', borderWidth:0,
                   borderRadius:'3px', ...s,
                 }} />
               ))}
 
               {qrDataUrl ? (
-                <div style={{ position:'relative', overflow:'hidden', borderRadius:'6px' }}>
+                <div style={{ position:'relative', overflow:'hidden', borderRadius:'4px' }}>
                   <div style={{
                     position:'absolute', left:0, right:0, height:'2px',
                     background:'linear-gradient(90deg,transparent,#6366f1,#8b5cf6,#6366f1,transparent)',
-                    boxShadow:'0 0 10px 2px rgba(99,102,241,0.5)',
+                    boxShadow:'0 0 8px 2px rgba(99,102,241,0.5)',
                     zIndex:10, borderRadius:'2px',
                     animation:'scanLine 2.5s ease-in-out infinite',
                   }} />
-                  <img src={qrDataUrl} alt="UPI QR" style={{ display:'block', width:'180px', height:'180px', borderRadius:'4px' }} />
+                  <img src={qrDataUrl} alt="UPI QR" style={{ display:'block', width:'140px', height:'140px', borderRadius:'4px' }} />
                 </div>
               ) : (
                 <div style={{
-                  width:'180px', height:'180px',
+                  width:'140px', height:'140px',
                   display:'flex', alignItems:'center', justifyContent:'center',
                 }}>
                   <div style={{
-                    width:'32px', height:'32px',
+                    width:'28px', height:'28px',
                     border:'3px solid rgba(0,0,0,0.1)', borderTopColor:'#6366f1',
                     borderRadius:'50%', animation:'spin 0.8s linear infinite',
                   }} />
                 </div>
               )}
             </div>
-            <p style={{ fontSize:'11px', color:'rgba(255,255,255,0.55)', textAlign:'center', lineHeight:1.5, fontWeight:500 }}>
+            <p style={{ fontSize:'10px', color:'rgba(255,255,255,0.55)', textAlign:'center', lineHeight:1.4, fontWeight:500 }}>
               📱 Open any UPI app → Scan QR → Pay <strong style={{ color:'#fff' }}>{formatAmount(target.amount)}</strong>
             </p>
           </div>
@@ -289,7 +296,7 @@ function QrModal({ target, onClose }: { target: QrTarget; onClose: () => void })
           <div style={{
             display:'flex', alignItems:'center', gap:'8px',
             background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.1)',
-            borderRadius:'12px', padding:'9px 12px', marginBottom:'14px',
+            borderRadius:'12px', padding:'8px 12px', marginBottom:'12px',
           }}>
             <div style={{ flex:1, minWidth:0 }}>
               <p style={{ fontSize:'8px', color:'rgba(255,255,255,0.35)', textTransform:'uppercase', letterSpacing:'0.8px', fontWeight:600, marginBottom:'2px' }}>UPI ID</p>
@@ -309,8 +316,8 @@ function QrModal({ target, onClose }: { target: QrTarget; onClose: () => void })
           </div>
 
           {/* ── Share Payment Link ── */}
-          <div style={{ marginBottom:'12px' }}>
-            <p style={{ fontSize:'9px', color:'rgba(255,255,255,0.35)', textTransform:'uppercase', letterSpacing:'0.8px', fontWeight:600, marginBottom:'7px' }}>
+          <div style={{ marginBottom:'12px', flexShrink: 0 }}>
+            <p style={{ fontSize:'9px', color:'rgba(255,255,255,0.35)', textTransform:'uppercase', letterSpacing:'0.8px', fontWeight:600, marginBottom:'6px' }}>
               📤 Share Payment Link
             </p>
 
@@ -318,7 +325,7 @@ function QrModal({ target, onClose }: { target: QrTarget; onClose: () => void })
             <div style={{
               display:'flex', alignItems:'center', gap:'6px',
               background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.1)',
-              borderRadius:'12px', padding:'8px 12px', marginBottom:'8px',
+              borderRadius:'12px', padding:'8px 12px', marginBottom:'6px',
             }}>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink:0 }}>
                 <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
@@ -345,13 +352,13 @@ function QrModal({ target, onClose }: { target: QrTarget; onClose: () => void })
             <button
               onClick={handleWhatsApp}
               style={{
-                width:'100%', padding:'12px',
+                width:'100%', padding:'10px',
                 background:'linear-gradient(135deg,#25D366,#128C7E)',
-                border:'none', borderRadius:'12px',
-                color:'#fff', fontSize:'13px', fontWeight:700, cursor:'pointer',
-                display:'flex', alignItems:'center', justifyContent:'center', gap:'8px',
-                boxShadow:'0 6px 18px rgba(37,211,102,0.35)',
-                marginBottom:'10px',
+                border:'none', borderRadius:'10px',
+                color:'#fff', fontSize:'12px', fontWeight:700, cursor:'pointer',
+                display:'flex', alignItems:'center', justifyContent:'center', gap:'6px',
+                boxShadow:'0 4px 14px rgba(37,211,102,0.35)',
+                marginBottom:'8px',
               }}
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -364,7 +371,7 @@ function QrModal({ target, onClose }: { target: QrTarget; onClose: () => void })
 
 
           {/* Footer */}
-          <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:'5px', borderTop:'1px solid rgba(255,255,255,0.06)', paddingTop:'12px' }}>
+          <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:'5px', borderTop:'1px solid rgba(255,255,255,0.06)', paddingTop:'14px', paddingBottom:'8px' }}>
             <span style={{ fontSize:'11px' }}>🔒</span>
             <span style={{ fontSize:'9px', color:'rgba(255,255,255,0.28)', fontWeight:500 }}>
               Secured by NPCI · 256-bit encryption · UPI verified
@@ -390,6 +397,96 @@ function QrModal({ target, onClose }: { target: QrTarget; onClose: () => void })
   );
 }
 
+// ── Receipt Poster Modal ──────────────────────────────────────────────────────
+function ReceiptPoster({ data, onClose }: { data: any; onClose: () => void }) {
+  const formatAmount = (n: number) =>
+    new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(n);
+
+  function handleShare() {
+    const msg = `السَّلَامُ عَلَيْكُمْ\n\n*Padanthara Markaz - Payment Receipt*\n\nAlhamdulillah! We have received your contribution.\n\n*Receipt No:* ${data.receiptNumber}\n*Payer:* ${data.userName}\n*Amount:* ${formatAmount(data.amount)}\n*Date:* ${new Date(data.date).toLocaleDateString('en-IN')}\n\nMay Allah reward you for your generosity.\n\nجَزَاكَ اللَّهُ خَيْرًا`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+  }
+
+  return (
+    <div
+      style={{
+        position: 'fixed', inset: 0, zIndex: 100,
+        background: 'rgba(0,0,0,0.8)',
+        backdropFilter: 'blur(8px)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: '20px', animation: 'fadeIn 0.3s ease'
+      }}
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
+      <div style={{
+        width: '100%', maxWidth: '400px',
+        background: 'linear-gradient(135deg, #064e3b 0%, #065f46 100%)',
+        borderRadius: '24px', position: 'relative',
+        boxShadow: '0 30px 60px rgba(0,0,0,0.5)',
+        overflow: 'hidden', padding: '40px 30px',
+        textAlign: 'center', color: '#fff',
+        border: '4px double rgba(255,255,255,0.1)'
+      }}>
+        {/* Islamic Ornament Decor */}
+        <div style={{ position: 'absolute', top: '-20px', left: '-20px', opacity: 0.1, fontSize: '100px' }}>۞</div>
+        <div style={{ position: 'absolute', bottom: '-20px', right: '-20px', opacity: 0.1, fontSize: '100px' }}>۞</div>
+
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          <h1 style={{ fontSize: '14px', letterSpacing: '3px', fontWeight: 700, opacity: 0.8, marginBottom: '8px' }}>ALHAMDULILLAH</h1>
+          <div style={{ width: '40px', height: '2px', background: '#fbbf24', margin: '0 auto 24px' }} />
+
+          <p style={{ fontSize: '12px', opacity: 0.7, marginBottom: '4px' }}>OFFICIAL PAYMENT RECEIPT</p>
+          <p style={{ fontSize: '10px', fontFamily: 'monospace', color: '#fbbf24', marginBottom: '30px' }}>#{data.receiptNumber}</p>
+
+          <p style={{ fontSize: '14px', marginBottom: '8px' }}>Presented To</p>
+          <h2 style={{ fontSize: '26px', fontWeight: 900, marginBottom: '4px', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>{data.userName}</h2>
+          <p style={{ fontSize: '13px', opacity: 0.8, marginBottom: '30px' }}>{data.place}</p>
+
+          <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '16px', padding: '20px', marginBottom: '30px', border: '1px solid rgba(255,255,255,0.1)' }}>
+            <p style={{ fontSize: '11px', opacity: 0.6, marginBottom: '5px' }}>CONTRIBUTION AMOUNT</p>
+            <p style={{ fontSize: '32px', fontWeight: 900, color: '#fbbf24' }}>{formatAmount(data.amount)}</p>
+          </div>
+
+          <p style={{ fontSize: '11px', opacity: 0.7, marginBottom: '24px', fontStyle: 'italic' }}>
+            "May Allah accept your donation and bless you with abundance."
+          </p>
+
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '20px' }}>
+            <div style={{ textAlign: 'left' }}>
+              <p style={{ fontSize: '10px', opacity: 0.5 }}>DATE</p>
+              <p style={{ fontSize: '12px', fontWeight: 600 }}>{new Date(data.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</p>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <p style={{ fontSize: '10px', fontWeight: 800 }}>PADANTHARA MARKAZ</p>
+              <p style={{ fontSize: '8px', opacity: 0.5 }}>ADMINISTRATION</p>
+            </div>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', gap: '10px', marginTop: '30px' }}>
+          <button
+            onClick={handleShare}
+            style={{ flex: 2, background: '#25D366', color: '#fff', border: 'none', padding: '12px', borderRadius: '12px', fontWeight: 700, fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+          >
+            Share on WhatsApp
+          </button>
+          <button
+            onClick={() => window.print()}
+            style={{ flex: 1, background: 'rgba(255,255,255,0.15)', color: '#fff', border: 'none', padding: '12px', borderRadius: '12px', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}
+          >
+            Print
+          </button>
+        </div>
+
+        <button
+          onClick={onClose}
+          style={{ position: 'absolute', top: '15px', right: '15px', background: 'transparent', border: 'none', color: '#fff', fontSize: '20px', cursor: 'pointer', opacity: 0.5 }}
+        >✕</button>
+      </div>
+    </div>
+  );
+}
+
 // ── Dashboard Page ────────────────────────────────────────────────────────────
 export default function DashboardPage() {
   const router = useRouter();
@@ -401,6 +498,11 @@ export default function DashboardPage() {
   const [usersLoading, setUsersLoading] = useState(true);
   const [pagination, setPagination] = useState({ total: 0, page: 1, pages: 1 });
   const [qrTarget, setQrTarget] = useState<QrTarget | null>(null);
+  const [transactions, setTransactions] = useState<any[]>([]);
+  const [transactionsLoading, setTransactionsLoading] = useState(true);
+  const [verifyingId, setVerifyingId] = useState<string | null>(null);
+  const [posterData, setPosterData] = useState<any | null>(null);
+  const [instantLoading, setInstantLoading] = useState<string | null>(null);
 
   // Verify session
   useEffect(() => {
@@ -424,10 +526,21 @@ export default function DashboardPage() {
     try {
       const res = await fetch(`/api/users?page=${page}&limit=10`);
       const data = await res.json();
-      setUsers(data.users || []);
+      
+      if (!res.ok) {
+        console.error('Failed to fetch users:', data);
+        toast(data.error || 'Failed to load users', 'error');
+        setUsers([]);
+        setPagination({ total: 0, page: 1, pages: 1 });
+        return;
+      }
+      
+      setUsers(Array.isArray(data.users) ? data.users : []);
       setPagination(data.pagination || { total: 0, page: 1, pages: 1 });
-    } catch {
+    } catch (err) {
+      console.error('Error fetching users:', err);
       toast('Failed to load users', 'error');
+      setUsers([]);
     } finally {
       setUsersLoading(false);
     }
@@ -437,28 +550,65 @@ export default function DashboardPage() {
     if (session) fetchUsers();
   }, [session, fetchUsers]);
 
+  const fetchTransactions = useCallback(async () => {
+    setTransactionsLoading(true);
+    try {
+      const res = await fetch('/api/admin/transactions');
+      const data = await res.json();
+      setTransactions(Array.isArray(data) ? data : []);
+    } catch {
+      toast('Failed to load transactions', 'error');
+      setTransactions([]);
+    } finally {
+      setTransactionsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (session) {
+      fetchTransactions();
+      const interval = setInterval(fetchTransactions, 10000);
+      return () => clearInterval(interval);
+    }
+  }, [session, fetchTransactions]);
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!form.name || !form.place || !form.contact || !form.amount) {
       toast('All fields are required', 'error');
       return;
     }
+
+    // Validate amount
+    const amountNum = Number(form.amount);
+    if (isNaN(amountNum) || amountNum <= 0) {
+      toast('Amount must be a valid positive number', 'error');
+      return;
+    }
+
     setSubmitting(true);
     try {
       const res = await fetch('/api/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, amount: Number(form.amount) }),
+        body: JSON.stringify({ ...form, amount: amountNum }),
       });
       const data = await res.json();
-      if (!res.ok) {
+
+      if (!res.ok || !data.success) {
         toast(data.error || 'Failed to add user', 'error');
         return;
       }
-      toast('User added successfully!', 'success');
-      setForm(initialForm);
-      fetchUsers(1);
-    } catch {
+
+      if (data.user && data.user._id) {
+        toast('User added successfully!', 'success');
+        setForm(initialForm);
+        fetchUsers(1);
+      } else {
+        toast('User added but response is incomplete', 'error');
+      }
+    } catch (err) {
+      console.error('Error adding user:', err);
       toast('Network error. Please try again.', 'error');
     } finally {
       setSubmitting(false);
@@ -468,6 +618,66 @@ export default function DashboardPage() {
   async function handleLogout() {
     await fetch('/api/auth/logout', { method: 'POST' });
     router.push('/auth');
+  }
+
+  async function handleVerifyPayment(transactionId: string) {
+    setVerifyingId(transactionId);
+    try {
+      const res = await fetch(`/api/transactions/verify/${transactionId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: 'verified', notes: 'Verified by admin' }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        toast('Payment verified successfully!', 'success');
+        fetchTransactions();
+        // Show poster
+        if (data.transaction) {
+          // Find the transaction in local state to get user details
+          const tx = transactions.find(t => t._id === transactionId);
+          setPosterData({
+            receiptNumber: data.transaction.receiptNumber,
+            userName: tx?.userId?.name || 'User',
+            place: tx?.userId?.place || '',
+            amount: data.transaction.amount || tx?.amount,
+            date: data.transaction.verifiedAt || new Date().toISOString()
+          });
+        }
+      } else {
+        toast(data.error || 'Failed to verify payment', 'error');
+      }
+    } catch {
+      toast('Error verifying payment', 'error');
+    } finally {
+      setVerifyingId(null);
+    }
+  }
+
+  async function handleInstantVerify(user: User) {
+    setInstantLoading(user._id);
+    try {
+      const res = await fetch('/api/admin/transactions/instant', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId: user._id }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        toast('Payment recorded and verified!', 'success');
+        setPosterData(data.transaction);
+      } else {
+        toast(data.error || 'Failed to verify payment', 'error');
+      }
+    } catch {
+      toast('Error verifying payment', 'error');
+    } finally {
+      setInstantLoading(null);
+    }
   }
 
   const formatAmount = (n: number) =>
@@ -488,6 +698,9 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-neutral-50">
+      {/* Poster Modal */}
+      {posterData && <ReceiptPoster data={posterData} onClose={() => setPosterData(null)} />}
+
       {/* QR Modal */}
       {qrTarget && <QrModal target={qrTarget} onClose={() => setQrTarget(null)} />}
 
@@ -514,10 +727,12 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-4 py-6 sm:py-10 grid grid-cols-1 lg:grid-cols-5 gap-5 sm:gap-8">
-        {/* Add User Form */}
-        <div className="lg:col-span-2 order-1 lg:order-none">
-          <div className="bg-white border border-neutral-200 rounded-xl shadow-sm overflow-hidden lg:sticky lg:top-24">
+      <main className="max-w-5xl mx-auto px-4 py-6 sm:py-10">
+        {/* Top Section: Add User Form + Payment Verification */}
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-5 sm:gap-8 mb-8">
+          {/* Add User Form */}
+          <div className="lg:col-span-2">
+            <div className="bg-white border border-neutral-200 rounded-xl shadow-sm overflow-hidden lg:sticky lg:top-24">
             <div className="px-6 py-5 border-b border-neutral-100">
               <h2 className="font-black text-lg tracking-tight">Add New User</h2>
               <p className="text-xs text-neutral-500 mt-0.5">Fill in the details to add a user.</p>
@@ -550,7 +765,7 @@ export default function DashboardPage() {
 
               <button
                 type="submit"
-                disabled={submitting}
+                disabled={submitting || !form.name || !form.place || !form.contact || !form.amount}
                 className="w-full bg-black text-white py-3 rounded-lg font-semibold text-sm hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 mt-2"
               >
                 {submitting ? (
@@ -566,9 +781,91 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Users List */}
+        {/* Payment Verification  */}
         <div className="lg:col-span-3">
-          <div className="bg-white border border-neutral-200 rounded-xl shadow-sm overflow-hidden">
+          <div className="bg-white border border-neutral-200 rounded-xl shadow-sm overflow-hidden mb-6">
+            <div className="px-6 py-5 border-b border-neutral-100">
+              <h2 className="font-black text-lg tracking-tight">Payment Verification</h2>
+              <p className="text-xs text-neutral-500 mt-0.5">Verify and approve submitted payments</p>
+            </div>
+
+            {transactionsLoading ? (
+              <div className="p-6 space-y-3">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="h-20 skeleton rounded-lg" />
+                ))}
+              </div>
+            ) : !Array.isArray(transactions) || transactions.filter((t) => t.status === 'submitted').length === 0 ? (
+              <div className="py-12 text-center text-neutral-400 text-sm">
+                ✓ No pending payments to verify
+              </div>
+            ) : (
+              <div className="divide-y">
+                {transactions
+                  .filter((t) => t.status === 'submitted')
+                  .map((transaction) => (
+                    <div key={transaction._id} className="p-4 hover:bg-neutral-50 transition-colors">
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="flex-1">
+                          <p className="font-semibold text-sm text-black">{transaction.userId.name}</p>
+                          <p className="text-xs text-neutral-500 mt-1">
+                            {transaction.userId.place} · {transaction.userId.contact}
+                          </p>
+                          <p className="text-xs text-neutral-400 mt-0.5">
+                            Submitted: {new Date(transaction.submittedAt).toLocaleDateString('en-IN', {
+                              month: 'short',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold text-lg text-black">{formatAmount(transaction.amount)}</p>
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={() => setQrTarget({ userId: transaction.userId._id, name: transaction.userId.name, amount: transaction.amount, shortCode: transaction.userId.shortCode })}
+                            className="p-1.5 hover:bg-neutral-100 rounded-md transition-colors group"
+                            title="Show QR Code"
+                          >
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-neutral-400 group-hover:text-black">
+                              <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
+                              <path d="M14 14h2v2h-2z" /><path d="M18 14h3v3h-3z" /><path d="M14 18h3v3h-3z" /><path d="M20 20h1v1h-1z" />
+                            </svg>
+                          </button>
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              disabled={verifyingId === transaction._id}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  handleVerifyPayment(transaction._id);
+                                }
+                              }}
+                              className="w-5 h-5 rounded border-neutral-300 accent-black transition-all"
+                            />
+                            <div className="flex flex-col">
+                              <span className="text-[10px] font-bold text-black leading-none mb-0.5">
+                                {verifyingId === transaction._id ? 'Verifying...' : 'VERIFY'}
+                              </span>
+                              <span className="text-[9px] text-neutral-400 leading-none">
+                                Generate Poster
+                              </span>
+                            </div>
+                          </label>
+                        </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            )}
+          </div>
+        </div>
+        </div>
+
+        {/* Users List - Full Width Below */}
+        <div className="bg-white border border-neutral-200 rounded-xl shadow-sm overflow-hidden">
             <div className="px-6 py-5 border-b border-neutral-100 flex items-center justify-between">
               <div>
                 <h2 className="font-black text-lg tracking-tight">My Users</h2>
@@ -632,17 +929,34 @@ export default function DashboardPage() {
                         <p className="text-[11px] text-neutral-400">
                           {new Date(user.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
                         </p>
-                        {/* QR Button — opens modal on same page */}
-                        <button
-                          onClick={() => setQrTarget({ userId: user._id, name: user.name, amount: user.amount, shortCode: user.shortCode })}
-                          className="inline-flex items-center gap-1 text-[10px] font-semibold bg-black text-white rounded-md px-2 py-1 hover:bg-neutral-700 active:scale-95 transition-all"
-                        >
-                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                            <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
-                            <path d="M14 14h2v2h-2z" /><path d="M18 14h3v3h-3z" /><path d="M14 18h3v3h-3z" /><path d="M20 20h1v1h-1z" />
-                          </svg>
-                          QR Pay
-                        </button>
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={() => setQrTarget({ userId: user._id, name: user.name, amount: user.amount, shortCode: user.shortCode })}
+                            className="p-2 hover:bg-neutral-100 rounded-lg transition-colors group"
+                            title="QR Pay"
+                          >
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="text-neutral-400 group-hover:text-black">
+                              <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
+                              <path d="M14 14h2v2h-2z" /><path d="M18 14h3v3h-3z" /><path d="M14 18h3v3h-3z" /><path d="M20 20h1v1h-1z" />
+                            </svg>
+                          </button>
+                          
+                          <label className="flex items-center gap-2 cursor-pointer" title="Verify & Create Poster">
+                            <input
+                              type="checkbox"
+                              disabled={instantLoading === user._id}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  handleInstantVerify(user);
+                                }
+                              }}
+                              className="w-5 h-5 rounded border-neutral-300 accent-black transition-all"
+                            />
+                            <span className="text-[10px] font-bold text-neutral-400 group-hover:text-black">
+                              {instantLoading === user._id ? '...' : 'POSTER'}
+                            </span>
+                          </label>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -675,7 +989,6 @@ export default function DashboardPage() {
               </>
             )}
           </div>
-        </div>
       </main>
     </div>
   );
