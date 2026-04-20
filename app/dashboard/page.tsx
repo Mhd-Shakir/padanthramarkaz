@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from '@/components/ui/Toaster';
 import QRCode from 'qrcode';
+import html2canvas from 'html2canvas';
 
 const UPI_ID = 'qr.markaz1@sib';
 const PAYEE_NAME = 'Padanthara Markaz';
@@ -21,6 +22,9 @@ interface User {
   amount: number;
   shortCode?: string;
   createdAt: string;
+  transactionStatus?: 'pending' | 'submitted' | 'verified' | 'rejected';
+  receiptNumber?: string;
+  verifiedAt?: string;
 }
 
 interface QrTarget {
@@ -399,89 +403,174 @@ function QrModal({ target, onClose }: { target: QrTarget; onClose: () => void })
 
 // ── Receipt Poster Modal ──────────────────────────────────────────────────────
 function ReceiptPoster({ data, onClose }: { data: any; onClose: () => void }) {
+  const posterRef = useRef<HTMLDivElement>(null);
+  const [generating, setGenerating] = useState(false);
+
   const formatAmount = (n: number) =>
     new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(n);
 
-  function handleShare() {
-    const msg = `السَّلَامُ عَلَيْكُمْ\n\n*Padanthara Markaz - Payment Receipt*\n\nAlhamdulillah! We have received your contribution.\n\n*Receipt No:* ${data.receiptNumber}\n*Payer:* ${data.userName}\n*Amount:* ${formatAmount(data.amount)}\n*Date:* ${new Date(data.date).toLocaleDateString('en-IN')}\n\nMay Allah reward you for your generosity.\n\nجَزَاكَ اللَّهُ خَيْرًا`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+  async function handleDownloadImage() {
+    if (!posterRef.current) return;
+    setGenerating(true);
+    try {
+      const canvas = await html2canvas(posterRef.current, {
+        scale: 3, // High quality
+        useCORS: true,
+        backgroundColor: '#064e3b',
+      });
+      const link = document.createElement('a');
+      link.download = `Receipt_${data.userName.replace(/\s+/g, '_')}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      toast('Poster ready for download!', 'success');
+    } catch (err) {
+      console.error(err);
+      toast('Failed to generate image', 'error');
+    } finally {
+      setGenerating(false);
+    }
+  }
+
+  async function handleShareImage() {
+    if (!posterRef.current) return;
+    setGenerating(true);
+    try {
+      const canvas = await html2canvas(posterRef.current, { scale: 2, useCORS: true });
+      const blob = await new Promise<Blob | null>(r => canvas.toBlob(r, 'image/png'));
+      
+      if (blob && navigator.share && navigator.canShare && navigator.canShare({ files: [new File([blob], 'poster.png', { type: 'image/png' })] })) {
+        const file = new File([blob], `Receipt_${data.userName}.png`, { type: 'image/png' });
+        await navigator.share({
+          files: [file],
+          title: 'Payment Receipt',
+          text: `Alhamdulillah! Contribution received from ${data.userName}.`,
+        });
+      } else {
+        // Fallback to text share if web share fails or not supported for files
+        const msg = `السَّلَامُ عَلَيْكُمْ\n\n*Padanthara Markaz - Payment Receipt*\n\nAlhamdulillah! We have received your contribution.\n\n*Receipt No:* ${data.receiptNumber}\n*Payer:* ${data.userName}\n*Amount:* ${formatAmount(data.amount)}\n*Date:* ${new Date(data.date).toLocaleDateString('en-IN')}\n\nجَزَاكَ اللَّهُ خَيْرًا`;
+        window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+        toast('Direct image share not supported on this browser. Use Download instead.', 'info');
+      }
+    } catch (err) {
+      console.error(err);
+      toast('Could not share image', 'error');
+    } finally {
+      setGenerating(false);
+    }
   }
 
   return (
     <div
       style={{
         position: 'fixed', inset: 0, zIndex: 100,
-        background: 'rgba(0,0,0,0.8)',
-        backdropFilter: 'blur(8px)',
+        background: 'rgba(0,0,0,0.85)',
+        backdropFilter: 'blur(10px)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         padding: '20px', animation: 'fadeIn 0.3s ease'
       }}
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div style={{
-        width: '100%', maxWidth: '400px',
-        background: 'linear-gradient(135deg, #064e3b 0%, #065f46 100%)',
-        borderRadius: '24px', position: 'relative',
-        boxShadow: '0 30px 60px rgba(0,0,0,0.5)',
-        overflow: 'hidden', padding: '40px 30px',
-        textAlign: 'center', color: '#fff',
-        border: '4px double rgba(255,255,255,0.1)'
-      }}>
-        {/* Islamic Ornament Decor */}
-        <div style={{ position: 'absolute', top: '-20px', left: '-20px', opacity: 0.1, fontSize: '100px' }}>۞</div>
-        <div style={{ position: 'absolute', bottom: '-20px', right: '-20px', opacity: 0.1, fontSize: '100px' }}>۞</div>
+      <div style={{ width: '100%', maxWidth: '380px' }}>
+        {/* The capture area */}
+        <div 
+          ref={posterRef}
+          style={{
+            background: 'linear-gradient(135deg, #064e3b 0%, #065f46 50%, #047857 100%)',
+            borderRadius: '24px', position: 'relative',
+            boxShadow: '0 30px 60px rgba(0,0,0,0.5)',
+            overflow: 'hidden', padding: '45px 35px',
+            textAlign: 'center', color: '#fff',
+            border: '8px double rgba(251, 191, 36, 0.15)',
+          }}
+        >
+          {/* Islamic Ornament Decor */}
+          <div style={{ position: 'absolute', top: '-15px', left: '-15px', opacity: 0.1, fontSize: '100px', userSelect: 'none' }}>۞</div>
+          <div style={{ position: 'absolute', bottom: '-15px', right: '-15px', opacity: 0.1, fontSize: '100px', userSelect: 'none' }}>۞</div>
 
-        <div style={{ position: 'relative', zIndex: 1 }}>
-          <h1 style={{ fontSize: '14px', letterSpacing: '3px', fontWeight: 700, opacity: 0.8, marginBottom: '8px' }}>ALHAMDULILLAH</h1>
-          <div style={{ width: '40px', height: '2px', background: '#fbbf24', margin: '0 auto 24px' }} />
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <h1 style={{ fontSize: '14px', letterSpacing: '4px', fontWeight: 800, color: '#fbbf24', marginBottom: '8px' }}>ALHAMDULILLAH</h1>
+            <div style={{ width: '50px', height: '2px', background: 'rgba(251, 191, 36, 0.3)', margin: '0 auto 28px' }} />
 
-          <p style={{ fontSize: '12px', opacity: 0.7, marginBottom: '4px' }}>OFFICIAL PAYMENT RECEIPT</p>
-          <p style={{ fontSize: '10px', fontFamily: 'monospace', color: '#fbbf24', marginBottom: '30px' }}>#{data.receiptNumber}</p>
+            <p style={{ fontSize: '11px', opacity: 0.8, letterSpacing: '1px', marginBottom: '4px' }}>OFFICIAL PAYMENT RECEIPT</p>
+            <p style={{ fontSize: '10px', fontFamily: 'monospace', color: '#fbbf24', marginBottom: '35px', fontWeight: 600 }}>#{data.receiptNumber}</p>
 
-          <p style={{ fontSize: '14px', marginBottom: '8px' }}>Presented To</p>
-          <h2 style={{ fontSize: '26px', fontWeight: 900, marginBottom: '4px', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>{data.userName}</h2>
-          <p style={{ fontSize: '13px', opacity: 0.8, marginBottom: '30px' }}>{data.place}</p>
+            <p style={{ fontSize: '14px', marginBottom: '6px', fontWeight: 500 }}>Presented To</p>
+            <h2 style={{ fontSize: '28px', fontWeight: 900, marginBottom: '4px', textShadow: '0 2px 8px rgba(0,0,0,0.3)', color: '#fff' }}>{data.userName}</h2>
+            <p style={{ fontSize: '14px', color: '#d1fae5', marginBottom: '35px', fontWeight: 500 }}>{data.place}</p>
 
-          <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '16px', padding: '20px', marginBottom: '30px', border: '1px solid rgba(255,255,255,0.1)' }}>
-            <p style={{ fontSize: '11px', opacity: 0.6, marginBottom: '5px' }}>CONTRIBUTION AMOUNT</p>
-            <p style={{ fontSize: '32px', fontWeight: 900, color: '#fbbf24' }}>{formatAmount(data.amount)}</p>
-          </div>
-
-          <p style={{ fontSize: '11px', opacity: 0.7, marginBottom: '24px', fontStyle: 'italic' }}>
-            "May Allah accept your donation and bless you with abundance."
-          </p>
-
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '20px' }}>
-            <div style={{ textAlign: 'left' }}>
-              <p style={{ fontSize: '10px', opacity: 0.5 }}>DATE</p>
-              <p style={{ fontSize: '12px', fontWeight: 600 }}>{new Date(data.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</p>
+            <div style={{ 
+              background: 'rgba(255,255,255,0.07)', 
+              borderRadius: '20px', 
+              padding: '24px 20px', 
+              marginBottom: '35px', 
+              border: '1px solid rgba(251, 191, 36, 0.2)',
+              boxShadow: 'inset 0 0 20px rgba(0,0,0,0.1)'
+            }}>
+              <p style={{ fontSize: '11px', color: '#6ee7b7', fontWeight: 700, marginBottom: '6px', letterSpacing: '1px' }}>CONTRIBUTION AMOUNT</p>
+              <p style={{ fontSize: '38px', fontWeight: 900, color: '#fbbf24', letterSpacing: '-1px' }}>{formatAmount(data.amount)}</p>
             </div>
-            <div style={{ textAlign: 'right' }}>
-              <p style={{ fontSize: '10px', fontWeight: 800 }}>PADANTHARA MARKAZ</p>
-              <p style={{ fontSize: '8px', opacity: 0.5 }}>ADMINISTRATION</p>
+
+            <p style={{ fontSize: '12px', color: '#d1fae5', marginBottom: '30px', fontStyle: 'italic', lineHeight: 1.5, padding: '0 10px' }}>
+              "May Allah accept your donation and bless you and your family with abundance."
+            </p>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderTop: '1px solid rgba(255,255,255,0.15)', paddingTop: '22px' }}>
+              <div style={{ textAlign: 'left' }}>
+                <p style={{ fontSize: '9px', color: '#6ee7b7', fontWeight: 700, marginBottom: '2px' }}>DATE</p>
+                <p style={{ fontSize: '13px', fontWeight: 700 }}>{new Date(data.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</p>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <p style={{ fontSize: '12px', fontWeight: 900, color: '#fbbf24', marginBottom: '1px' }}>PADANTHARA MARKAZ</p>
+                <p style={{ fontSize: '9px', fontWeight: 700, opacity: 0.7 }}>CERTIFIED RECEIPT</p>
+              </div>
             </div>
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '10px', marginTop: '30px' }}>
+        {/* Buttons - outside capture area */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '20px' }}>
           <button
-            onClick={handleShare}
-            style={{ flex: 2, background: '#25D366', color: '#fff', border: 'none', padding: '12px', borderRadius: '12px', fontWeight: 700, fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+            onClick={handleShareImage}
+            disabled={generating}
+            style={{ 
+              width: '100%', background: '#25D366', color: '#fff', border: 'none', 
+              padding: '14px', borderRadius: '14px', fontWeight: 800, fontSize: '14px', 
+              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', 
+              gap: '10px', boxShadow: '0 10px 25px rgba(37,211,102,0.2)',
+              transition: 'all 0.2s', opacity: generating ? 0.7 : 1
+            }}
           >
-            Share on WhatsApp
+            {generating ? 'Processing...' : (
+              <>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
+                Share Image
+              </>
+            )}
           </button>
+          
           <button
-            onClick={() => window.print()}
-            style={{ flex: 1, background: 'rgba(255,255,255,0.15)', color: '#fff', border: 'none', padding: '12px', borderRadius: '12px', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}
+            onClick={handleDownloadImage}
+            disabled={generating}
+            style={{ 
+              width: '100%', background: 'rgba(255,255,255,0.15)', color: '#fff', 
+              border: '1px solid rgba(255,255,255,0.2)', padding: '14px', borderRadius: '14px', 
+              fontWeight: 700, fontSize: '14px', cursor: 'pointer', transition: 'all 0.2s'
+            }}
           >
-            Print
+            {generating ? 'Please wait...' : 'Download to Gallery'}
+          </button>
+          
+          <button
+            onClick={onClose}
+            style={{ 
+              alignSelf: 'center', background: 'transparent', border: 'none', 
+              color: 'rgba(255,255,255,0.5)', fontSize: '13px', fontWeight: 600, 
+              cursor: 'pointer', padding: '10px', marginTop: '5px' 
+            }}
+          >
+            Dismiss
           </button>
         </div>
-
-        <button
-          onClick={onClose}
-          style={{ position: 'absolute', top: '15px', right: '15px', background: 'transparent', border: 'none', color: '#fff', fontSize: '20px', cursor: 'pointer', opacity: 0.5 }}
-        >✕</button>
       </div>
     </div>
   );
@@ -670,6 +759,12 @@ export default function DashboardPage() {
       if (res.ok) {
         toast('Payment recorded and verified!', 'success');
         setPosterData(data.transaction);
+        // Update local state so checkbox reflects change immediately
+        setUsers(prev => prev.map(u => 
+          u._id === user._id 
+            ? { ...u, transactionStatus: 'verified', receiptNumber: data.transaction.receiptNumber } 
+            : u
+        ));
       } else {
         toast(data.error || 'Failed to verify payment', 'error');
       }
@@ -941,21 +1036,37 @@ export default function DashboardPage() {
                             </svg>
                           </button>
                           
-                          <label className="flex items-center gap-2 cursor-pointer" title="Verify & Create Poster">
+                          <label className="flex items-center gap-2 cursor-pointer" title={user.transactionStatus === 'verified' ? "Payment Verified" : "Verify & Create Poster"}>
                             <input
                               type="checkbox"
-                              disabled={instantLoading === user._id}
+                              checked={user.transactionStatus === 'verified'}
+                              disabled={instantLoading === user._id || user.transactionStatus === 'verified'}
                               onChange={(e) => {
-                                if (e.target.checked) {
+                                if (e.target.checked && user.transactionStatus !== 'verified') {
                                   handleInstantVerify(user);
                                 }
                               }}
-                              className="w-5 h-5 rounded border-neutral-300 accent-black transition-all"
+                              className={`w-5 h-5 rounded border-neutral-300 accent-black transition-all ${user.transactionStatus === 'verified' ? 'opacity-100' : ''}`}
                             />
-                            <span className="text-[10px] font-bold text-neutral-400 group-hover:text-black">
-                              {instantLoading === user._id ? '...' : 'POSTER'}
+                            <span className={`text-[10px] font-bold ${user.transactionStatus === 'verified' ? 'text-green-600' : 'text-neutral-400 group-hover:text-black'}`}>
+                              {instantLoading === user._id ? '...' : user.transactionStatus === 'verified' ? 'VERIFIED' : 'POSTER'}
                             </span>
                           </label>
+                          
+                          {user.transactionStatus === 'verified' && (
+                            <button
+                              onClick={() => setPosterData({
+                                receiptNumber: user.receiptNumber,
+                                userName: user.name,
+                                place: user.place,
+                                amount: user.amount,
+                                date: user.verifiedAt || user.createdAt
+                              })}
+                              className="p-1 px-2 bg-neutral-100 hover:bg-neutral-200 rounded text-[9px] font-bold text-neutral-600 transition-colors"
+                            >
+                              VIEW POSTER
+                            </button>
+                          )}
                         </div>
                       </div>
                     </div>

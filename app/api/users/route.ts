@@ -5,6 +5,7 @@ import { getSession } from '@/lib/auth';
 // Explicitly import Admin so its schema is registered with Mongoose before
 // any populate() call — Turbopack tree-shakes unused imports otherwise.
 import '@/models/Admin';
+import Transaction from '@/models/Transaction';
 
 // POST: Add a new user (Admin only)
 export async function POST(req: NextRequest) {
@@ -83,8 +84,24 @@ export async function GET(req: NextRequest) {
       User.countDocuments(query),
     ]);
 
+    // Fetch latest transaction for each user to determine status
+    const usersWithStatus = await Promise.all(
+      users.map(async (user: any) => {
+        const lastTx = await Transaction.findOne({ userId: user._id })
+          .sort({ createdAt: -1 })
+          .select('status receiptNumber verifiedAt')
+          .lean();
+        return {
+          ...user,
+          transactionStatus: lastTx?.status || 'pending',
+          receiptNumber: lastTx?.receiptNumber || null,
+          verifiedAt: lastTx?.verifiedAt || null,
+        };
+      })
+    );
+
     return NextResponse.json({
-      users,
+      users: usersWithStatus,
       pagination: {
         total,
         page,
