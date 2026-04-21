@@ -406,11 +406,9 @@ function QrModal({ target, onClose }: { target: QrTarget; onClose: () => void })
 function ReceiptPoster({ data, onClose }: { data: any; onClose: () => void }) {
   const posterRef = useRef<HTMLDivElement>(null);
   const [generating, setGenerating] = useState(false);
-
   const [logoDataUrl, setLogoDataUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    // Pre-load logo as data URL for html2canvas compatibility
     const img = new Image();
     img.crossOrigin = 'anonymous';
     img.src = '/logo.png';
@@ -434,7 +432,7 @@ function ReceiptPoster({ data, onClose }: { data: any; onClose: () => void }) {
     setGenerating(true);
     try {
       const canvas = await html2canvas(posterRef.current, {
-        scale: 3, // High quality
+        scale: 4, // Higher quality
         useCORS: true,
         backgroundColor: '#064e3b',
       });
@@ -466,10 +464,9 @@ function ReceiptPoster({ data, onClose }: { data: any; onClose: () => void }) {
           text: `Alhamdulillah! Contribution received from ${data.userName}.`,
         });
       } else {
-        // Fallback to text share if web share fails or not supported for files
         const msg = `\u200Fالسَّلَامُ عَلَيْكُمْ\n\n\u200E*Padanthara Markaz - Payment Receipt*\n\n\u200EAlhamdulillah! We have received your contribution.\n\n\u200E*Receipt No:* ${data.receiptNumber}\n\u200E*Payer:* ${data.userName}\n\u200E*Amount:* ${formatAmount(data.amount)}\n\u200E*Date:* ${new Date(data.date).toLocaleDateString('en-IN')}\n\n\u200Fجَزَاكَ اللَّهُ خَيْرًا\n\n\u200E*Devarshola Abdusalam Musliyar*\n\u200E(General Secretary Padanthara Markaz)`;
         window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
-        toast('Direct image share not supported on this browser. Use Download instead.', 'info');
+        toast('Direct image share not supported. Using WhatsApp text instead.', 'info');
       }
     } catch (err) {
       console.error(err);
@@ -483,7 +480,7 @@ function ReceiptPoster({ data, onClose }: { data: any; onClose: () => void }) {
     <div
       style={{
         position: 'fixed', inset: 0, zIndex: 100,
-        background: 'rgba(0,0,0,0.9)',
+        background: 'rgba(0,0,0,0.92)',
         backdropFilter: 'blur(12px)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         padding: '16px', animation: 'fadeIn 0.3s ease'
@@ -495,79 +492,96 @@ function ReceiptPoster({ data, onClose }: { data: any; onClose: () => void }) {
         <div 
           ref={posterRef}
           style={{
-            background: 'linear-gradient(135deg, #064e3b 0%, #065f46 100%)',
-            borderRadius: '0', // Square for Instagram
+            background: 'linear-gradient(135deg, #054a32 0%, #065f46 100%)',
+            borderRadius: '0', 
             position: 'relative',
             boxShadow: '0 40px 100px rgba(0,0,0,0.6)',
-            overflow: 'hidden', padding: '30px',
+            overflow: 'hidden', padding: '70px 40px',
             textAlign: 'center', color: '#fff',
-            border: '12px double rgba(251, 191, 36, 0.2)',
-            aspectRatio: '1/1', display: 'flex', flexDirection: 'column',
-            justifyContent: 'space-between', boxSizing: 'border-box',
-            fontFamily: "'Outfit', sans-serif"
+            border: '12px double rgba(193, 155, 60, 0.3)',
+            aspectRatio: '1080/1920', display: 'flex', flexDirection: 'column',
+            justifyContent: 'space-between', boxSizing: 'border-box'
           }}
         >
-          {/* Background Patterns */}
+          {/* Background Decor */}
           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: 0.05, pointerEvents: 'none', background: 'radial-gradient(circle at 50% 50%, #fbbf24 0%, transparent 70%)' }} />
           
-          {/* Header */}
           <div style={{ position: 'relative', zIndex: 2 }}>
             {logoDataUrl && (
               <div style={{ 
-                width: '70px', height: '70px', background: '#fff', 
-                borderRadius: '50%', padding: '8px', margin: '0 auto 12px',
+                width: '75px', height: '75px', background: '#fff', 
+                borderRadius: '50%', padding: '10px', margin: '0 auto 12px',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                boxShadow: '0 10px 20px rgba(0,0,0,0.2)'
+                boxShadow: '0 10px 25px rgba(0,0,0,0.3)'
               }}>
-                <img 
-                  src={logoDataUrl} 
-                  alt="Logo" 
-                  style={{ maxWidth: '85%', maxHeight: '85%', objectFit: 'contain' }} 
-                />
+                <img src={logoDataUrl} alt="Logo" style={{ maxWidth: '90%', maxHeight: '90%', objectFit: 'contain' }} />
               </div>
             )}
-            </div>
+            <h1 style={{ fontSize: '12px', letterSpacing: '4px', fontWeight: 900, color: '#fbbf24', marginBottom: '4px' }}>Alhamdulillah</h1>
+            <p style={{ fontSize: '10px', opacity: 0.8, letterSpacing: '2px', fontWeight: 600 }}>OFFICIAL CONTRIBUTION RECEIPT</p>
+          </div>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderTop: '1px solid rgba(255,255,255,0.15)', paddingTop: '12px' }}>
-              <div style={{ textAlign: 'left' }}>
-                <p style={{ fontSize: '8px', color: '#6ee7b7', fontWeight: 700, marginBottom: '1px' }}>DATE</p>
-                <p style={{ fontSize: '11px', fontWeight: 700 }}>{new Date(data.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</p>
-              </div>
-              <div style={{ textAlign: 'right' }}>
-                <p style={{ fontSize: '11px', fontWeight: 900, color: '#fbbf24', marginBottom: '1px' }}>PADANTHARA MARKAZ</p>
-                <p style={{ fontSize: '8px', fontWeight: 700, opacity: 0.7 }}>CERTIFIED RECEIPT</p>
-              </div>
-            </div>
+          <div style={{ position: 'relative', zIndex: 2 }}>
+            <p style={{ fontSize: '14px', fontWeight: 500, opacity: 0.9, marginBottom: '6px' }}>Presented with Gratitude to</p>
+            <h2 style={{ fontSize: '30px', fontWeight: 900, color: '#fff', lineHeight: 1.1 }}>{data.userName}</h2>
+            <div style={{ width: '40px', height: '3px', background: '#fbbf24', margin: '12px auto' }} />
+            <p style={{ fontSize: '16px', color: '#6ee7b7', fontWeight: 600 }}>{data.place}</p>
+          </div>
+
+          <div style={{ 
+            position: 'relative', zIndex: 2,
+            background: 'rgba(255,255,255,0.06)', 
+            borderRadius: '24px', 
+            padding: '25px 20px', 
+            border: '1px solid rgba(251, 191, 36, 0.25)',
+            boxShadow: 'inset 0 0 30px rgba(0,0,0,0.1)'
+          }}>
+            <p style={{ fontSize: '10px', color: '#6ee7b7', fontWeight: 800, marginBottom: '8px', letterSpacing: '1px' }}>AMOUNT CONTRIBUTED</p>
+            <p style={{ fontSize: '44px', fontWeight: 900, color: '#fbbf24', letterSpacing: '-1.5px', lineHeight: 1 }}>{formatAmount(data.amount)}</p>
+            <p style={{ fontSize: '10px', color: '#d1fae5', marginTop: '12px', opacity: 0.8, fontStyle: 'italic' }}>
+              "May Allah accept and bless your generosity."
+            </p>
+          </div>
+
+          <div style={{ position: 'relative', zIndex: 2 }}>
+             <div style={{ marginBottom: '18px' }}>
+                <p style={{ fontSize: '15px', fontWeight: 800, color: '#fff', marginBottom: '2px' }}>Devarshola Abdusalam Musliyar</p>
+                <p style={{ fontSize: '10px', color: '#6ee7b7', fontWeight: 700 }}>General Secretary Padanthara Markaz</p>
+             </div>
+             
+             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,0.12)', paddingTop: '15px' }}>
+                <div style={{ textAlign: 'left' }}>
+                  <p style={{ fontSize: '9px', color: '#6ee7b7', fontWeight: 800 }}>DATE</p>
+                  <p style={{ fontSize: '12px', fontWeight: 800 }}>{new Date(data.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</p>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <p style={{ fontSize: '12px', fontWeight: 900, color: '#fbbf24' }}>PADANTHARA MARKAZ</p>
+                  <p style={{ fontSize: '10px', fontFamily: 'monospace', opacity: 0.6 }}>#{data.receiptNumber}</p>
+                </div>
+             </div>
           </div>
         </div>
 
-        {/* Buttons - outside capture area */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '20px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           <button
             onClick={handleShareImage}
             disabled={generating}
             style={{ 
               width: '100%', background: '#25D366', color: '#fff', border: 'none', 
-              padding: '14px', borderRadius: '14px', fontWeight: 800, fontSize: '14px', 
-              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', 
-              gap: '10px', boxShadow: '0 10px 25px rgba(37,211,102,0.2)',
+              padding: '14px', borderRadius: '16px', fontWeight: 800, fontSize: '14px', 
+              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
               transition: 'all 0.2s', opacity: generating ? 0.7 : 1
             }}
           >
-            {generating ? 'Processing...' : (
-              <>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
-                Share Image
-              </>
-            )}
+            {generating ? 'Processing...' : 'Share directly to WhatsApp'}
           </button>
           
           <button
             onClick={handleDownloadImage}
             disabled={generating}
             style={{ 
-              width: '100%', background: 'rgba(255,255,255,0.15)', color: '#fff', 
-              border: '1px solid rgba(255,255,255,0.2)', padding: '14px', borderRadius: '14px', 
+              width: '100%', background: 'rgba(255,255,255,0.1)', color: '#fff', 
+              border: '1px solid rgba(255,255,255,0.15)', padding: '14px', borderRadius: '16px', 
               fontWeight: 700, fontSize: '14px', cursor: 'pointer', transition: 'all 0.2s'
             }}
           >
@@ -578,8 +592,8 @@ function ReceiptPoster({ data, onClose }: { data: any; onClose: () => void }) {
             onClick={onClose}
             style={{ 
               alignSelf: 'center', background: 'transparent', border: 'none', 
-              color: 'rgba(255,255,255,0.5)', fontSize: '13px', fontWeight: 600, 
-              cursor: 'pointer', padding: '10px', marginTop: '5px' 
+              color: 'rgba(255,255,255,0.4)', fontSize: '13px', fontWeight: 600, 
+              cursor: 'pointer', padding: '10px' 
             }}
           >
             Dismiss
