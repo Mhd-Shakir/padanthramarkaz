@@ -91,7 +91,9 @@ export default function ReceiptPage() {
         {/* Header */}
         <div style={styles.header}>
           <div style={styles.logoSection}>
-            <div style={styles.logoCircle}>📋</div>
+            <div style={{ width: '80px', height: '80px', background: 'white', borderRadius: '16px', padding: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+              <img src="/logo.png" alt="Logo" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+            </div>
             <h1 style={styles.title}>Payment Receipt</h1>
             <p style={styles.subtitle}>Padanthara Markaz</p>
           </div>
@@ -179,6 +181,12 @@ export default function ReceiptPage() {
       <div style={styles.actions}>
         <button style={styles.printBtn} onClick={handlePrint}>
           🖨️ Print Receipt
+        </button>
+        <button 
+          style={{...styles.printBtn, background: '#64748b'}} 
+          onClick={() => window.history.back()}
+        >
+          ← Go Back
         </button>
       </div>
 

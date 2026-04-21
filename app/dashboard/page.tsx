@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { toast } from '@/components/ui/Toaster';
 import QRCode from 'qrcode';
 import html2canvas from 'html2canvas';
@@ -406,6 +407,25 @@ function ReceiptPoster({ data, onClose }: { data: any; onClose: () => void }) {
   const posterRef = useRef<HTMLDivElement>(null);
   const [generating, setGenerating] = useState(false);
 
+  const [logoDataUrl, setLogoDataUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Pre-load logo as data URL for html2canvas compatibility
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.src = '/logo.png';
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(img, 0, 0);
+        setLogoDataUrl(canvas.toDataURL('image/png'));
+      }
+    };
+  }, []);
+
   const formatAmount = (n: number) =>
     new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(n);
 
@@ -488,6 +508,20 @@ function ReceiptPoster({ data, onClose }: { data: any; onClose: () => void }) {
           <div style={{ position: 'absolute', bottom: '-15px', right: '-15px', opacity: 0.1, fontSize: '100px', userSelect: 'none' }}>۞</div>
 
           <div style={{ position: 'relative', zIndex: 1 }}>
+            {logoDataUrl && (
+              <div style={{ 
+                width: '70px', height: '70px', background: '#fff', 
+                borderRadius: '15px', padding: '6px', margin: '0 auto 20px',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                boxShadow: '0 10px 20px rgba(0,0,0,0.2)'
+              }}>
+                <img 
+                  src={logoDataUrl} 
+                  alt="Logo" 
+                  style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} 
+                />
+              </div>
+            )}
             <h1 style={{ fontSize: '14px', letterSpacing: '4px', fontWeight: 800, color: '#fbbf24', marginBottom: '8px' }}>ALHAMDULILLAH</h1>
             <div style={{ width: '50px', height: '2px', background: 'rgba(251, 191, 36, 0.3)', margin: '0 auto 28px' }} />
 
@@ -510,9 +544,14 @@ function ReceiptPoster({ data, onClose }: { data: any; onClose: () => void }) {
               <p style={{ fontSize: '38px', fontWeight: 900, color: '#fbbf24', letterSpacing: '-1px' }}>{formatAmount(data.amount)}</p>
             </div>
 
-            <p style={{ fontSize: '12px', color: '#d1fae5', marginBottom: '30px', fontStyle: 'italic', lineHeight: 1.5, padding: '0 10px' }}>
+            <p style={{ fontSize: '12px', color: '#d1fae5', marginBottom: '20px', fontStyle: 'italic', lineHeight: 1.5, padding: '0 10px' }}>
               "May Allah accept your donation and bless you and your family with abundance."
             </p>
+
+            <div style={{ marginBottom: '30px' }}>
+              <p style={{ fontSize: '13px', fontWeight: 800, color: '#fff', marginBottom: '2px' }}>DR Devershola Abdul Salam Musliyar</p>
+              <p style={{ fontSize: '10px', color: '#6ee7b7', fontWeight: 600 }}>(General Secretary Padanthara Markaz)</p>
+            </div>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderTop: '1px solid rgba(255,255,255,0.15)', paddingTop: '22px' }}>
               <div style={{ textAlign: 'left' }}>
@@ -705,8 +744,10 @@ export default function DashboardPage() {
   }
 
   async function handleLogout() {
-    await fetch('/api/auth/logout', { method: 'POST' });
+    // Immediate redirect for better UX
     router.push('/auth');
+    // Still trigger session clearing but don't wait for it
+    fetch('/api/auth/logout', { method: 'POST' }).catch(() => {});
   }
 
   async function handleVerifyPayment(transactionId: string) {
@@ -813,12 +854,20 @@ export default function DashboardPage() {
               </p>
             </div>
           </div>
-          <button
-            onClick={handleLogout}
-            className="text-sm text-neutral-500 hover:text-black transition-colors border border-neutral-200 rounded px-3 py-1.5 hover:border-black font-medium"
-          >
-            Sign Out
-          </button>
+          <div className="flex items-center gap-3">
+            <Link 
+              href="/" 
+              className="text-xs text-neutral-400 hover:text-black transition-colors font-medium border-r border-neutral-200 pr-3"
+            >
+              ← Home
+            </Link>
+            <button
+              onClick={handleLogout}
+              className="text-sm text-neutral-500 hover:text-black transition-colors border border-neutral-200 rounded px-3 py-1.5 hover:border-black font-medium"
+            >
+              Sign Out
+            </button>
+          </div>
         </div>
       </header>
 
@@ -1048,25 +1097,23 @@ export default function DashboardPage() {
                               }}
                               className={`w-5 h-5 rounded border-neutral-300 accent-black transition-all ${user.transactionStatus === 'verified' ? 'opacity-100' : ''}`}
                             />
-                            <span className={`text-[10px] font-bold ${user.transactionStatus === 'verified' ? 'text-green-600' : 'text-neutral-400 group-hover:text-black'}`}>
-                              {instantLoading === user._id ? '...' : user.transactionStatus === 'verified' ? 'VERIFIED' : 'POSTER'}
+                            <span className={`text-[10px] font-bold ${user.transactionStatus === 'verified' ? 'text-green-600' : 'text-neutral-400'}`}>
+                              {instantLoading === user._id ? '...' : user.transactionStatus === 'verified' ? 'VERIFIED' : ''}
                             </span>
                           </label>
                           
-                          {user.transactionStatus === 'verified' && (
-                            <button
-                              onClick={() => setPosterData({
-                                receiptNumber: user.receiptNumber,
-                                userName: user.name,
-                                place: user.place,
-                                amount: user.amount,
-                                date: user.verifiedAt || user.createdAt
-                              })}
-                              className="p-1 px-2 bg-neutral-100 hover:bg-neutral-200 rounded text-[9px] font-bold text-neutral-600 transition-colors"
-                            >
-                              VIEW POSTER
-                            </button>
-                          )}
+                          <button
+                            onClick={() => setPosterData({
+                              receiptNumber: user.receiptNumber || 'PENDING',
+                              userName: user.name,
+                              place: user.place,
+                              amount: user.amount,
+                              date: user.verifiedAt || user.createdAt
+                            })}
+                            className="p-1 px-2 bg-neutral-100 hover:bg-neutral-200 rounded text-[9px] font-bold text-neutral-600 transition-colors"
+                          >
+                            VIEW POSTER
+                          </button>
                         </div>
                       </div>
                     </div>
