@@ -265,10 +265,17 @@ export default function HomePage() {
       </section>
 
       {/* ── FOOTER ──────────────────────────────────────────────── */}
-      <footer className="border-t border-neutral-200 bg-white">
-        <div className="max-w-5xl mx-auto px-4 py-5 flex flex-col sm:flex-row justify-between items-center gap-2 text-xs text-neutral-400">
-          <p>© {new Date().getFullYear()} Padanthara Markaz. All rights reserved.</p>
-          <Link href="/auth" className="hover:text-black transition-colors font-medium">
+      <footer className="mt-12 border-t border-neutral-200 py-10 px-4 bg-white">
+        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-6">
+          <div className="text-center sm:text-left space-y-1">
+            <p className="text-xs text-neutral-400 font-medium tracking-wide">
+              © {new Date().getFullYear()} PADANTHARA MARKAZ. ALL RIGHTS RESERVED.
+            </p>
+            <p className="text-[10px] text-neutral-400">
+              Powered by <a href="https://fikavo.com" target="_blank" rel="noopener noreferrer" className="font-bold text-neutral-600 hover:text-black transition-colors border-b border-neutral-100">fikavo.com</a>
+            </p>
+          </div>
+          <Link href="/auth" className="text-xs font-semibold bg-black text-white px-4 py-2 rounded-lg hover:bg-neutral-800 transition-colors shadow-sm">
             Admin Login →
           </Link>
         </div>

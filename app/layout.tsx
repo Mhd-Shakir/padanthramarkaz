@@ -14,6 +14,9 @@ export const metadata: Metadata = {
   description:
     'Padanthara Markaz Donate Collection — Live leaderboard of admin contributions and the admin portal.',
   robots: 'noindex, nofollow',
+  icons: {
+    icon: '/logo.png',
+  },
 };
 
 export const viewport: Viewport = {
@@ -28,9 +31,6 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={inter.variable}>
-      <head>
-        <link rel="icon" href="/favicon.ico" sizes="any" />
-      </head>
       <body className="antialiased">
         {children}
         <Toaster />

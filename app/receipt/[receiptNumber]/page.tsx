@@ -172,7 +172,7 @@ export default function ReceiptPage() {
             This is an electronically generated receipt and is valid without signature.
           </p>
           <p style={styles.footerDate}>
-            Generated on {new Date().toLocaleDateString('en-IN')}
+            © {new Date().getFullYear()} Padanthara Markaz · Powered by fikavo.com
           </p>
         </div>
       </div>

@@ -119,7 +119,7 @@ function QrModal({ target, onClose }: { target: QrTarget; onClose: () => void })
   }
 
   function handleWhatsApp() {
-    const msg = `السَّلَامُ عَلَيْكُمْ\n\n*Subject: Payment Reminder - Padanthara Markaz*\n\nDear *${target.name}*,\n\nWe hope this message finds you well.\n\nThis is a formal reminder that an amount of *${formatAmount(target.amount)}* is due regarding your account at Padanthara Markaz. To ensure a smooth process, please complete the payment using the link below or by scanning the QR code via any UPI app (Google Pay, PhonePe, Paytm, etc.):\n\n🔗 ${payLink}\n\nYour prompt attention to this matter is greatly appreciated. If you have already processed this payment, please disregard this message.\n\nجَزَاكَ اللَّهُ خَيْرًا\n\n*Administration*\nPadanthara Markaz`;
+    const msg = `\u200Fالسَّلَامُ عَلَيْكُمْ\n\n\u200E*Subject: Payment Reminder - Padanthara Markaz*\n\n\u200EDear *${target.name}*,\n\n\u200EWe hope this message finds you well.\n\n\u200EThis is a formal reminder that an amount of *${formatAmount(target.amount)}* is due regarding your account at Padanthara Markaz. To ensure a smooth process, please complete the payment using the link below or by scanning the QR code via any UPI app (Google Pay, PhonePe, Paytm, etc.):\n\n\u200E🔗 ${payLink}\n\n\u200EYour prompt attention to this matter is greatly appreciated. If you have already processed this payment, please disregard this message.\n\n\u200Fجَزَاكَ اللَّهُ خَيْرًا\n\n\u200E*DR Devershola Abdul Salam Musliyar*\n\u200E(General Secretary of Pananthara Markaz)`;
     window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
   }
 
@@ -467,7 +467,7 @@ function ReceiptPoster({ data, onClose }: { data: any; onClose: () => void }) {
         });
       } else {
         // Fallback to text share if web share fails or not supported for files
-        const msg = `السَّلَامُ عَلَيْكُمْ\n\n*Padanthara Markaz - Payment Receipt*\n\nAlhamdulillah! We have received your contribution.\n\n*Receipt No:* ${data.receiptNumber}\n*Payer:* ${data.userName}\n*Amount:* ${formatAmount(data.amount)}\n*Date:* ${new Date(data.date).toLocaleDateString('en-IN')}\n\nجَزَاكَ اللَّهُ خَيْرًا`;
+        const msg = `\u200Fالسَّلَامُ عَلَيْكُمْ\n\n\u200E*Padanthara Markaz - Payment Receipt*\n\n\u200EAlhamdulillah! We have received your contribution.\n\n\u200E*Receipt No:* ${data.receiptNumber}\n\u200E*Payer:* ${data.userName}\n\u200E*Amount:* ${formatAmount(data.amount)}\n\u200E*Date:* ${new Date(data.date).toLocaleDateString('en-IN')}\n\n\u200Fجَزَاكَ اللَّهُ خَيْرًا\n\n\u200E*DR Devershola Abdul Salam Musliyar*\n\u200E(General Secretary of Pananthara Markaz)`;
         window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
         toast('Direct image share not supported on this browser. Use Download instead.', 'info');
       }
@@ -498,9 +498,11 @@ function ReceiptPoster({ data, onClose }: { data: any; onClose: () => void }) {
             background: 'linear-gradient(135deg, #064e3b 0%, #065f46 50%, #047857 100%)',
             borderRadius: '24px', position: 'relative',
             boxShadow: '0 30px 60px rgba(0,0,0,0.5)',
-            overflow: 'hidden', padding: '45px 35px',
+            overflow: 'hidden', padding: '22px 20px',
             textAlign: 'center', color: '#fff',
             border: '8px double rgba(251, 191, 36, 0.15)',
+            aspectRatio: '1/1', display: 'flex', flexDirection: 'column',
+            justifyContent: 'center', boxSizing: 'border-box'
           }}
         >
           {/* Islamic Ornament Decor */}
@@ -510,10 +512,10 @@ function ReceiptPoster({ data, onClose }: { data: any; onClose: () => void }) {
           <div style={{ position: 'relative', zIndex: 1 }}>
             {logoDataUrl && (
               <div style={{ 
-                width: '70px', height: '70px', background: '#fff', 
-                borderRadius: '15px', padding: '6px', margin: '0 auto 20px',
+                width: '60px', height: '60px', background: '#fff', 
+                borderRadius: '12px', padding: '5px', margin: '0 auto 12px',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                boxShadow: '0 10px 20px rgba(0,0,0,0.2)'
+                boxShadow: '0 8px 16px rgba(0,0,0,0.2)'
               }}>
                 <img 
                   src={logoDataUrl} 
@@ -522,45 +524,45 @@ function ReceiptPoster({ data, onClose }: { data: any; onClose: () => void }) {
                 />
               </div>
             )}
-            <h1 style={{ fontSize: '14px', letterSpacing: '4px', fontWeight: 800, color: '#fbbf24', marginBottom: '8px' }}>ALHAMDULILLAH</h1>
-            <div style={{ width: '50px', height: '2px', background: 'rgba(251, 191, 36, 0.3)', margin: '0 auto 28px' }} />
+            <h1 style={{ fontSize: '13px', letterSpacing: '3px', fontWeight: 800, color: '#fbbf24', marginBottom: '6px' }}>ALHAMDULILLAH</h1>
+            <div style={{ width: '40px', height: '2px', background: 'rgba(251, 191, 36, 0.3)', margin: '0 auto 18px' }} />
 
-            <p style={{ fontSize: '11px', opacity: 0.8, letterSpacing: '1px', marginBottom: '4px' }}>OFFICIAL PAYMENT RECEIPT</p>
-            <p style={{ fontSize: '10px', fontFamily: 'monospace', color: '#fbbf24', marginBottom: '35px', fontWeight: 600 }}>#{data.receiptNumber}</p>
+            <p style={{ fontSize: '10px', opacity: 0.8, letterSpacing: '1px', marginBottom: '2px' }}>OFFICIAL PAYMENT RECEIPT</p>
+            <p style={{ fontSize: '10px', fontFamily: 'monospace', color: '#fbbf24', marginBottom: '16px', fontWeight: 600 }}>#{data.receiptNumber}</p>
 
-            <p style={{ fontSize: '14px', marginBottom: '6px', fontWeight: 500 }}>Presented To</p>
-            <h2 style={{ fontSize: '28px', fontWeight: 900, marginBottom: '4px', textShadow: '0 2px 8px rgba(0,0,0,0.3)', color: '#fff' }}>{data.userName}</h2>
-            <p style={{ fontSize: '14px', color: '#d1fae5', marginBottom: '35px', fontWeight: 500 }}>{data.place}</p>
+            <p style={{ fontSize: '13px', marginBottom: '4px', fontWeight: 500 }}>Presented To</p>
+            <h2 style={{ fontSize: '24px', fontWeight: 900, marginBottom: '2px', textShadow: '0 2px 8px rgba(0,0,0,0.3)', color: '#fff' }}>{data.userName}</h2>
+            <p style={{ fontSize: '13px', color: '#d1fae5', marginBottom: '18px', fontWeight: 500 }}>{data.place}</p>
 
             <div style={{ 
               background: 'rgba(255,255,255,0.07)', 
-              borderRadius: '20px', 
-              padding: '24px 20px', 
-              marginBottom: '35px', 
+              borderRadius: '16px', 
+              padding: '16px 12px', 
+              marginBottom: '16px', 
               border: '1px solid rgba(251, 191, 36, 0.2)',
               boxShadow: 'inset 0 0 20px rgba(0,0,0,0.1)'
             }}>
-              <p style={{ fontSize: '11px', color: '#6ee7b7', fontWeight: 700, marginBottom: '6px', letterSpacing: '1px' }}>CONTRIBUTION AMOUNT</p>
-              <p style={{ fontSize: '38px', fontWeight: 900, color: '#fbbf24', letterSpacing: '-1px' }}>{formatAmount(data.amount)}</p>
+              <p style={{ fontSize: '10px', color: '#6ee7b7', fontWeight: 700, marginBottom: '4px', letterSpacing: '1px' }}>CONTRIBUTION AMOUNT</p>
+              <p style={{ fontSize: '32px', fontWeight: 900, color: '#fbbf24', letterSpacing: '-1px' }}>{formatAmount(data.amount)}</p>
             </div>
 
-            <p style={{ fontSize: '12px', color: '#d1fae5', marginBottom: '20px', fontStyle: 'italic', lineHeight: 1.5, padding: '0 10px' }}>
+            <p style={{ fontSize: '11px', color: '#d1fae5', marginBottom: '12px', fontStyle: 'italic', lineHeight: 1.4, padding: '0 10px' }}>
               "May Allah accept your donation and bless you and your family with abundance."
             </p>
 
-            <div style={{ marginBottom: '30px' }}>
-              <p style={{ fontSize: '13px', fontWeight: 800, color: '#fff', marginBottom: '2px' }}>DR Devershola Abdul Salam Musliyar</p>
-              <p style={{ fontSize: '10px', color: '#6ee7b7', fontWeight: 600 }}>(General Secretary Padanthara Markaz)</p>
+            <div style={{ marginBottom: '14px' }}>
+              <p style={{ fontSize: '12px', fontWeight: 800, color: '#fff', marginBottom: '1px' }}>DR Devershola Abdul Salam Musliyar</p>
+              <p style={{ fontSize: '9px', color: '#6ee7b7', fontWeight: 600 }}>(General Secretary of Pananthara Markaz)</p>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderTop: '1px solid rgba(255,255,255,0.15)', paddingTop: '22px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderTop: '1px solid rgba(255,255,255,0.15)', paddingTop: '12px' }}>
               <div style={{ textAlign: 'left' }}>
-                <p style={{ fontSize: '9px', color: '#6ee7b7', fontWeight: 700, marginBottom: '2px' }}>DATE</p>
-                <p style={{ fontSize: '13px', fontWeight: 700 }}>{new Date(data.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</p>
+                <p style={{ fontSize: '8px', color: '#6ee7b7', fontWeight: 700, marginBottom: '1px' }}>DATE</p>
+                <p style={{ fontSize: '11px', fontWeight: 700 }}>{new Date(data.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</p>
               </div>
               <div style={{ textAlign: 'right' }}>
-                <p style={{ fontSize: '12px', fontWeight: 900, color: '#fbbf24', marginBottom: '1px' }}>PADANTHARA MARKAZ</p>
-                <p style={{ fontSize: '9px', fontWeight: 700, opacity: 0.7 }}>CERTIFIED RECEIPT</p>
+                <p style={{ fontSize: '11px', fontWeight: 900, color: '#fbbf24', marginBottom: '1px' }}>PADANTHARA MARKAZ</p>
+                <p style={{ fontSize: '8px', fontWeight: 700, opacity: 0.7 }}>CERTIFIED RECEIPT</p>
               </div>
             </div>
           </div>
@@ -1147,7 +1149,16 @@ export default function DashboardPage() {
               </>
             )}
           </div>
-      </main>
+      <footer className="mt-12 border-t border-neutral-200 py-10 px-4">
+        <div className="max-w-5xl mx-auto flex flex-col items-center text-center gap-2">
+          <p className="text-xs text-neutral-400 font-medium tracking-wide">
+            © {new Date().getFullYear()} PADANTHARA MARKAZ
+          </p>
+          <p className="text-[10px] text-neutral-400">
+            System Design & Technology by <a href="https://fikavo.com" target="_blank" rel="noopener noreferrer" className="font-bold text-neutral-600 hover:text-black transition-colors border-b border-neutral-200">fikavo.com</a>
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }
