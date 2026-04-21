@@ -455,7 +455,7 @@ function ReceiptPoster({ data, onClose }: { data: any; onClose: () => void }) {
     if (!posterRef.current) return;
     setGenerating(true);
     try {
-      const canvas = await html2canvas(posterRef.current, { scale: 2, useCORS: true });
+      const canvas = await html2canvas(posterRef.current, { scale: 3, useCORS: true });
       const blob = await new Promise<Blob | null>(r => canvas.toBlob(r, 'image/png'));
       
       if (blob && navigator.share && navigator.canShare && navigator.canShare({ files: [new File([blob], 'poster.png', { type: 'image/png' })] })) {
@@ -483,76 +483,49 @@ function ReceiptPoster({ data, onClose }: { data: any; onClose: () => void }) {
     <div
       style={{
         position: 'fixed', inset: 0, zIndex: 100,
-        background: 'rgba(0,0,0,0.85)',
-        backdropFilter: 'blur(10px)',
+        background: 'rgba(0,0,0,0.9)',
+        backdropFilter: 'blur(12px)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: '20px', animation: 'fadeIn 0.3s ease'
+        padding: '16px', animation: 'fadeIn 0.3s ease'
       }}
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div style={{ width: '100%', maxWidth: '380px' }}>
+      <div style={{ width: '100%', maxWidth: '420px', display:'flex', flexDirection:'column', gap:'16px' }}>
         {/* The capture area */}
         <div 
           ref={posterRef}
           style={{
-            background: 'linear-gradient(135deg, #064e3b 0%, #065f46 50%, #047857 100%)',
-            borderRadius: '24px', position: 'relative',
-            boxShadow: '0 30px 60px rgba(0,0,0,0.5)',
-            overflow: 'hidden', padding: '22px 20px',
+            background: 'linear-gradient(135deg, #064e3b 0%, #065f46 100%)',
+            borderRadius: '0', // Square for Instagram
+            position: 'relative',
+            boxShadow: '0 40px 100px rgba(0,0,0,0.6)',
+            overflow: 'hidden', padding: '30px',
             textAlign: 'center', color: '#fff',
-            border: '8px double rgba(251, 191, 36, 0.15)',
+            border: '12px double rgba(251, 191, 36, 0.2)',
             aspectRatio: '1/1', display: 'flex', flexDirection: 'column',
-            justifyContent: 'center', boxSizing: 'border-box'
+            justifyContent: 'space-between', boxSizing: 'border-box',
+            fontFamily: "'Outfit', sans-serif"
           }}
         >
-          {/* Islamic Ornament Decor */}
-          <div style={{ position: 'absolute', top: '-15px', left: '-15px', opacity: 0.1, fontSize: '100px', userSelect: 'none' }}>۞</div>
-          <div style={{ position: 'absolute', bottom: '-15px', right: '-15px', opacity: 0.1, fontSize: '100px', userSelect: 'none' }}>۞</div>
-
-          <div style={{ position: 'relative', zIndex: 1 }}>
+          {/* Background Patterns */}
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: 0.05, pointerEvents: 'none', background: 'radial-gradient(circle at 50% 50%, #fbbf24 0%, transparent 70%)' }} />
+          
+          {/* Header */}
+          <div style={{ position: 'relative', zIndex: 2 }}>
             {logoDataUrl && (
               <div style={{ 
-                width: '60px', height: '60px', background: '#fff', 
-                borderRadius: '12px', padding: '5px', margin: '0 auto 12px',
+                width: '70px', height: '70px', background: '#fff', 
+                borderRadius: '50%', padding: '8px', margin: '0 auto 12px',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                boxShadow: '0 8px 16px rgba(0,0,0,0.2)'
+                boxShadow: '0 10px 20px rgba(0,0,0,0.2)'
               }}>
                 <img 
                   src={logoDataUrl} 
                   alt="Logo" 
-                  style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} 
+                  style={{ maxWidth: '85%', maxHeight: '85%', objectFit: 'contain' }} 
                 />
               </div>
             )}
-            <h1 style={{ fontSize: '13px', letterSpacing: '3px', fontWeight: 800, color: '#fbbf24', marginBottom: '6px' }}>ALHAMDULILLAH</h1>
-            <div style={{ width: '40px', height: '2px', background: 'rgba(251, 191, 36, 0.3)', margin: '0 auto 18px' }} />
-
-            <p style={{ fontSize: '10px', opacity: 0.8, letterSpacing: '1px', marginBottom: '2px' }}>OFFICIAL PAYMENT RECEIPT</p>
-            <p style={{ fontSize: '10px', fontFamily: 'monospace', color: '#fbbf24', marginBottom: '16px', fontWeight: 600 }}>#{data.receiptNumber}</p>
-
-            <p style={{ fontSize: '13px', marginBottom: '4px', fontWeight: 500 }}>Presented To</p>
-            <h2 style={{ fontSize: '24px', fontWeight: 900, marginBottom: '2px', textShadow: '0 2px 8px rgba(0,0,0,0.3)', color: '#fff' }}>{data.userName}</h2>
-            <p style={{ fontSize: '13px', color: '#d1fae5', marginBottom: '18px', fontWeight: 500 }}>{data.place}</p>
-
-            <div style={{ 
-              background: 'rgba(255,255,255,0.07)', 
-              borderRadius: '16px', 
-              padding: '16px 12px', 
-              marginBottom: '16px', 
-              border: '1px solid rgba(251, 191, 36, 0.2)',
-              boxShadow: 'inset 0 0 20px rgba(0,0,0,0.1)'
-            }}>
-              <p style={{ fontSize: '10px', color: '#6ee7b7', fontWeight: 700, marginBottom: '4px', letterSpacing: '1px' }}>CONTRIBUTION AMOUNT</p>
-              <p style={{ fontSize: '32px', fontWeight: 900, color: '#fbbf24', letterSpacing: '-1px' }}>{formatAmount(data.amount)}</p>
-            </div>
-
-            <p style={{ fontSize: '11px', color: '#d1fae5', marginBottom: '12px', fontStyle: 'italic', lineHeight: 1.4, padding: '0 10px' }}>
-              "May Allah accept your donation and bless you and your family with abundance."
-            </p>
-
-            <div style={{ marginBottom: '14px' }}>
-              <p style={{ fontSize: '12px', fontWeight: 800, color: '#fff', marginBottom: '1px' }}>Devarshola Abdusalam Musliyar</p>
-              <p style={{ fontSize: '9px', color: '#6ee7b7', fontWeight: 600 }}>(General Secretary Padanthara Markaz)</p>
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderTop: '1px solid rgba(255,255,255,0.15)', paddingTop: '12px' }}>
@@ -941,65 +914,70 @@ export default function DashboardPage() {
                   <div key={i} className="h-20 skeleton rounded-lg" />
                 ))}
               </div>
-            ) : !Array.isArray(transactions) || transactions.filter((t) => t.status === 'submitted').length === 0 ? (
+            ) : !Array.isArray(transactions) || transactions.filter((t) => t.status === 'submitted' || t.status === 'verified').length === 0 ? (
               <div className="py-12 text-center text-neutral-400 text-sm">
-                ✓ No pending payments to verify
+                No activity yet
               </div>
             ) : (
-              <div className="divide-y">
+              <div className="divide-y max-h-[500px] overflow-y-auto">
                 {transactions
-                  .filter((t) => t.status === 'submitted')
+                  .filter((t) => t.status === 'submitted' || t.status === 'verified')
                   .map((transaction) => (
-                    <div key={transaction._id} className="p-4 hover:bg-neutral-50 transition-colors">
+                    <div key={transaction._id} className={`p-4 transition-colors ${transaction.status === 'verified' ? 'bg-green-50/30' : 'hover:bg-neutral-50'}`}>
                       <div className="flex items-center justify-between gap-4">
                         <div className="flex-1">
-                          <p className="font-semibold text-sm text-black">{transaction.userId.name}</p>
+                          <p className="font-semibold text-sm text-black flex items-center gap-2">
+                            {transaction.userId?.name || 'User'}
+                            {transaction.status === 'verified' && (
+                              <span className="bg-green-100 text-green-700 text-[9px] px-2 py-0.5 rounded-full font-black tracking-tight">VERIFIED</span>
+                            )}
+                          </p>
                           <p className="text-xs text-neutral-500 mt-1">
-                            {transaction.userId.place} · {transaction.userId.contact}
+                            {transaction.userId?.place} · {transaction.userId?.contact}
                           </p>
-                          <p className="text-xs text-neutral-400 mt-0.5">
-                            Submitted: {new Date(transaction.submittedAt).toLocaleDateString('en-IN', {
-                              month: 'short',
-                              day: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            })}
+                          <p className="text-[10px] text-neutral-400 mt-0.5 font-medium">
+                            {transaction.status === 'verified' 
+                              ? `Verified: ${new Date(transaction.verifiedAt).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', hour:'2-digit', minute:'2-digit' })}`
+                              : `Submitted: ${new Date(transaction.submittedAt).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', hour:'2-digit', minute:'2-digit' })}`
+                            }
                           </p>
                         </div>
-                        <div className="text-right">
-                          <p className="font-bold text-lg text-black">{formatAmount(transaction.amount)}</p>
-                        <div className="flex items-center gap-3">
-                          <button
-                            onClick={() => setQrTarget({ userId: transaction.userId._id, name: transaction.userId.name, amount: transaction.amount, shortCode: transaction.userId.shortCode })}
-                            className="p-1.5 hover:bg-neutral-100 rounded-md transition-colors group"
-                            title="Show QR Code"
-                          >
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-neutral-400 group-hover:text-black">
-                              <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
-                              <path d="M14 14h2v2h-2z" /><path d="M18 14h3v3h-3z" /><path d="M14 18h3v3h-3z" /><path d="M20 20h1v1h-1z" />
-                            </svg>
-                          </button>
-                          <label className="flex items-center gap-2 cursor-pointer">
-                            <input
-                              type="checkbox"
-                              disabled={verifyingId === transaction._id}
-                              onChange={(e) => {
-                                if (e.target.checked) {
-                                  handleVerifyPayment(transaction._id);
-                                }
-                              }}
-                              className="w-5 h-5 rounded border-neutral-300 accent-black transition-all"
-                            />
-                            <div className="flex flex-col">
-                              <span className="text-[10px] font-bold text-black leading-none mb-0.5">
-                                {verifyingId === transaction._id ? 'Verifying...' : 'VERIFY'}
-                              </span>
-                              <span className="text-[9px] text-neutral-400 leading-none">
-                                Generate Poster
-                              </span>
-                            </div>
-                          </label>
-                        </div>
+                        <div className="text-right flex flex-col items-end gap-2">
+                          <p className="font-bold text-lg text-black leading-none">{formatAmount(transaction.amount)}</p>
+                          
+                          <div className="flex items-center gap-2">
+                            {transaction.status === 'submitted' ? (
+                              <label className="flex items-center gap-2 cursor-pointer bg-black text-white px-3 py-1.5 rounded-lg shadow-sm">
+                                <input
+                                  type="checkbox"
+                                  disabled={verifyingId === transaction._id}
+                                  onChange={(e) => {
+                                    if (e.target.checked) {
+                                      handleVerifyPayment(transaction._id);
+                                    }
+                                  }}
+                                  className="w-4 h-4 rounded border-white accent-white transition-all"
+                                />
+                                <span className="text-[10px] font-black leading-none uppercase tracking-wider">
+                                  {verifyingId === transaction._id ? '...' : 'Verify'}
+                                </span>
+                              </label>
+                            ) : (
+                              <button
+                                onClick={() => setPosterData({
+                                  receiptNumber: transaction.receiptNumber,
+                                  userName: transaction.userId?.name || 'User',
+                                  place: transaction.userId?.place || '',
+                                  amount: transaction.amount,
+                                  date: transaction.verifiedAt
+                                })}
+                                className="bg-white border border-neutral-200 text-neutral-600 px-3 py-1.5 rounded-lg text-[10px] font-black hover:bg-neutral-50 transition-all shadow-sm flex items-center gap-1.5"
+                              >
+                                <span>VIEW POSTER</span>
+                                🖼️
+                              </button>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -1036,18 +1014,18 @@ export default function DashboardPage() {
                   <div key={i} className="h-14 skeleton rounded-lg" />
                 ))}
               </div>
-            ) : users.length === 0 ? (
+            ) : users.filter(u => u.transactionStatus !== 'verified').length === 0 ? (
               <div className="py-16 text-center text-neutral-400">
                 <div className="w-12 h-12 border-2 border-dashed border-neutral-200 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <span className="text-xl text-neutral-300">+</span>
+                  <span className="text-xl text-neutral-300">✓</span>
                 </div>
-                <p className="text-sm font-medium">No users added yet</p>
-                <p className="text-xs mt-1">Use the form to add your first user.</p>
+                <p className="text-sm font-medium">All users verified!</p>
+                <p className="text-xs mt-1">Verified users are moved to the list above.</p>
               </div>
             ) : (
               <>
                 <div className="divide-y divide-neutral-50">
-                  {users.map((user) => (
+                  {users.filter(u => u.transactionStatus !== 'verified').map((user) => (
                     <div key={user._id} className="px-6 py-4 flex items-start justify-between gap-3 hover:bg-neutral-50/60 transition-colors">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
