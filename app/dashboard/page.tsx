@@ -119,7 +119,7 @@ function QrModal({ target, onClose }: { target: QrTarget; onClose: () => void })
   }
 
   function handleWhatsApp() {
-    const msg = `\u200Fالسَّلَامُ عَلَيْكُمْ\n\n\u200E*Subject: Payment Reminder - Padanthara Markaz*\n\n\u200EDear *${target.name}*,\n\n\u200EWe hope this message finds you well.\n\n\u200EThis is a formal reminder that an amount of *${formatAmount(target.amount)}* is due regarding your account at Padanthara Markaz. To ensure a smooth process, please complete the payment using the link below or by scanning the QR code via any UPI app (Google Pay, PhonePe, Paytm, etc.):\n\n\u200E🔗 ${payLink}\n\n\u200EYour prompt attention to this matter is greatly appreciated. If you have already processed this payment, please disregard this message.\n\n\u200Fجَزَاكَ اللَّهُ خَيْرًا\n\n\u200E*DR Devershola Abdul Salam Musliyar*\n\u200E(General Secretary of Pananthara Markaz)`;
+    const msg = `\u200Fالسَّلَامُ عَلَيْكُمْ\n\n\u200E*Subject: Payment Reminder - Padanthara Markaz*\n\n\u200EDear *${target.name}*,\n\n\u200EWe hope this message finds you well.\n\n\u200EThis is a formal reminder that an amount of *${formatAmount(target.amount)}* is due regarding your account at Padanthara Markaz. To ensure a smooth process, please complete the payment using the link below or by scanning the QR code via any UPI app (Google Pay, PhonePe, Paytm, etc.):\n\n\u200E🔗 ${payLink}\n\n\u200EYour prompt attention to this matter is greatly appreciated. If you have already processed this payment, please disregard this message.\n\n\u200Fجَزَاكَ اللَّهُ خَيْرًا\n\n\u200E*Devarshola Abdusalam Musliyar*\n\u200E(General Secretary Padanthara Markaz)`;
     window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
   }
 
@@ -467,7 +467,7 @@ function ReceiptPoster({ data, onClose }: { data: any; onClose: () => void }) {
         });
       } else {
         // Fallback to text share if web share fails or not supported for files
-        const msg = `\u200Fالسَّلَامُ عَلَيْكُمْ\n\n\u200E*Padanthara Markaz - Payment Receipt*\n\n\u200EAlhamdulillah! We have received your contribution.\n\n\u200E*Receipt No:* ${data.receiptNumber}\n\u200E*Payer:* ${data.userName}\n\u200E*Amount:* ${formatAmount(data.amount)}\n\u200E*Date:* ${new Date(data.date).toLocaleDateString('en-IN')}\n\n\u200Fجَزَاكَ اللَّهُ خَيْرًا\n\n\u200E*DR Devershola Abdul Salam Musliyar*\n\u200E(General Secretary of Pananthara Markaz)`;
+        const msg = `\u200Fالسَّلَامُ عَلَيْكُمْ\n\n\u200E*Padanthara Markaz - Payment Receipt*\n\n\u200EAlhamdulillah! We have received your contribution.\n\n\u200E*Receipt No:* ${data.receiptNumber}\n\u200E*Payer:* ${data.userName}\n\u200E*Amount:* ${formatAmount(data.amount)}\n\u200E*Date:* ${new Date(data.date).toLocaleDateString('en-IN')}\n\n\u200Fجَزَاكَ اللَّهُ خَيْرًا\n\n\u200E*Devarshola Abdusalam Musliyar*\n\u200E(General Secretary Padanthara Markaz)`;
         window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
         toast('Direct image share not supported on this browser. Use Download instead.', 'info');
       }
@@ -551,8 +551,8 @@ function ReceiptPoster({ data, onClose }: { data: any; onClose: () => void }) {
             </p>
 
             <div style={{ marginBottom: '14px' }}>
-              <p style={{ fontSize: '12px', fontWeight: 800, color: '#fff', marginBottom: '1px' }}>DR Devershola Abdul Salam Musliyar</p>
-              <p style={{ fontSize: '9px', color: '#6ee7b7', fontWeight: 600 }}>(General Secretary of Pananthara Markaz)</p>
+              <p style={{ fontSize: '12px', fontWeight: 800, color: '#fff', marginBottom: '1px' }}>Devarshola Abdusalam Musliyar</p>
+              <p style={{ fontSize: '9px', color: '#6ee7b7', fontWeight: 600 }}>(General Secretary Padanthara Markaz)</p>
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderTop: '1px solid rgba(255,255,255,0.15)', paddingTop: '12px' }}>
@@ -1149,7 +1149,8 @@ export default function DashboardPage() {
               </>
             )}
           </div>
-      <footer className="mt-12 border-t border-neutral-200 py-10 px-4">
+        </main>
+        <footer className="mt-12 border-t border-neutral-200 py-10 px-4">
         <div className="max-w-5xl mx-auto flex flex-col items-center text-center gap-2">
           <p className="text-xs text-neutral-400 font-medium tracking-wide">
             © {new Date().getFullYear()} PADANTHARA MARKAZ
