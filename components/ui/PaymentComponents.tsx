@@ -93,7 +93,7 @@ export function QrModal({ target, onClose }: { target: QrTarget; onClose: () => 
   async function handleWhatsApp() {
     let phone = target.contact.replace(/\D/g, '');
     if (phone.length === 10) phone = '91' + phone;
-    const msg = `\u200Fالسَّلَامُ عَلَيْكُمْ\n\n\u200E*Subject: Payment Reminder - Padanthara Markaz*\n\n\u200EDear *${target.name}*,\n\n\u200EWe hope this message finds you well.\n\n\u200EThis is a formal reminder that an amount of *${formatAmount(target.amount)}* is due regarding your account at Padanthara Markaz. To ensure a smooth process, please complete the payment using the link below or by scanning the QR code via any UPI app (Google Pay, PhonePe, Paytm, etc.):\n\n\u200E🔗 ${payLink}\n\n\u200EYour prompt attention to this matter is greatly appreciated. If you have already processed this payment, please disregard this message.\n\n\u200Fجَزَاكَ اللَّهُ خَيْرًا\n\n\u200E*Devarshola Abdusalam Musliyar*\n\u200E(General Secretary Padanthara Markaz)`;
+    const msg = `\u200Fالسَّلَامُ عَلَيْكُمْ\n*Padanthara Markaz*\n\nDear *${target.name}*,\nWe hope this message finds you well.\n\nThis is a formal reminder that an amount of *${formatAmount(target.amount)}* is due regarding your account at Padanthara Markaz. To ensure a smooth process, please complete the payment using the link below or by scanning the QR code via any UPI app (Google Pay, PhonePe, Paytm, etc.):\n\n🔗 ${payLink}\n\nYour prompt attention to this matter is greatly appreciated. If you have already processed this payment, please disregard this message.\n\n\u200Fجَزَاكَ اللَّهُ خَيْرًا\n\n*Devarshola Abdusalam Musliyar*\n(General Secretary Padanthara Markaz)`;
     
     try {
       if (qrDataUrl && navigator.clipboard && window.ClipboardItem) {
