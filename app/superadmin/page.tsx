@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from '@/components/ui/Toaster';
+import { QrModal, ReceiptPoster, QrTarget } from '@/components/ui/PaymentComponents';
 
 interface Admin {
   _id: string;
@@ -24,6 +25,10 @@ interface User {
   amount: number;
   createdAt: string;
   createdBy: { name: string; place: string };
+  transactionStatus?: 'pending' | 'submitted' | 'verified' | 'rejected';
+  receiptNumber?: string;
+  verifiedAt?: string;
+  shortCode?: string;
 }
 
 type ActiveView = 'admins' | 'users';
@@ -56,6 +61,11 @@ export default function SuperAdminPage() {
 
   // Summary
   const [summary, setSummary] = useState({ totalAdmins: 0, totalUsers: 0, totalAmount: 0, activeAdmins: 0 });
+
+  // Verification & Payment states
+  const [qrTarget, setQrTarget] = useState<QrTarget | null>(null);
+  const [posterData, setPosterData] = useState<any | null>(null);
+  const [instantLoading, setInstantLoading] = useState<string | null>(null);
 
   // Verify super admin
   useEffect(() => {
@@ -276,6 +286,41 @@ export default function SuperAdminPage() {
   async function handleLogout() {
     await fetch('/api/auth/logout', { method: 'POST' });
     router.push('/auth');
+  }
+
+  async function handleInstantVerify(user: User) {
+    setInstantLoading(user._id);
+    try {
+      const res = await fetch('/api/admin/transactions/instant', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId: user._id }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        toast('Payment recorded and verified!', 'success');
+        setPosterData({
+          receiptNumber: data.transaction.receiptNumber,
+          userName: user.name,
+          place: user.place,
+          amount: data.transaction.amount || user.amount,
+          date: data.transaction.verifiedAt || new Date().toISOString()
+        });
+        setUsers(prev => prev.map(u => 
+          u._id === user._id 
+            ? { ...u, transactionStatus: 'verified', receiptNumber: data.transaction.receiptNumber, verifiedAt: data.transaction.verifiedAt } 
+            : u
+        ));
+      } else {
+        toast(data.error || 'Failed to verify payment', 'error');
+      }
+    } catch {
+      toast('Error verifying payment', 'error');
+    } finally {
+      setInstantLoading(null);
+    }
   }
 
   const formatAmount = (n: number) =>
@@ -601,7 +646,41 @@ export default function SuperAdminPage() {
                             Added by <span className="font-semibold text-black">{user.createdBy?.name || '—'}</span> · {new Date(user.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
                           </p>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 items-center flex-wrap justify-end">
+                          <button
+                            onClick={() => setQrTarget({ userId: user._id, name: user.name, amount: user.amount, contact: user.contact, shortCode: user.shortCode })}
+                            className="flex items-center justify-center h-7 px-2 text-[10px] bg-white font-semibold rounded border border-neutral-200 text-neutral-600 hover:bg-neutral-50 transition-colors shadow-sm"
+                            title="QR Pay"
+                          >
+                            QR
+                          </button>
+                          <label className="flex items-center justify-center w-7 h-7 bg-white rounded border border-neutral-200 shadow-sm cursor-pointer" title={user.transactionStatus === 'verified' ? "Payment Verified" : "Verify & Create Poster"}>
+                            <input
+                              type="checkbox"
+                              checked={user.transactionStatus === 'verified'}
+                              disabled={instantLoading === user._id || user.transactionStatus === 'verified'}
+                              onChange={(e) => {
+                                if (e.target.checked && user.transactionStatus !== 'verified') {
+                                  handleInstantVerify(user);
+                                }
+                              }}
+                              className="w-4 h-4 rounded border-neutral-300 accent-black"
+                            />
+                          </label>
+                          {user.transactionStatus === 'verified' && (
+                            <button
+                              onClick={() => setPosterData({
+                                receiptNumber: user.receiptNumber || 'PENDING',
+                                userName: user.name,
+                                place: user.place,
+                                amount: user.amount,
+                                date: user.verifiedAt || user.createdAt
+                              })}
+                              className="flex items-center justify-center h-7 px-2 text-[10px] bg-black text-white font-semibold rounded shadow-sm hover:bg-neutral-800 transition-colors"
+                            >
+                              POSTER
+                            </button>
+                          )}
                           <button
                             onClick={() => setEditingUser(user)}
                             className="flex items-center justify-center w-7 h-7 text-[10px] bg-white font-semibold rounded border border-neutral-200 text-neutral-600 hover:bg-neutral-50 transition-colors shadow-sm"
@@ -629,7 +708,7 @@ export default function SuperAdminPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-neutral-50 border-b border-neutral-100">
-                    {['Name', 'Place', 'Contact', 'Amount', 'Added By', 'Date', 'Actions'].map((h) => (
+                    {['Name', 'Place', 'Contact', 'Amount', 'Added By', 'Date', 'Payment', 'Actions'].map((h) => (
                       <th key={h} className="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider whitespace-nowrap">
                         {h}
                       </th>
@@ -640,7 +719,7 @@ export default function SuperAdminPage() {
                   {usersLoading ? (
                     Array.from({ length: 5 }).map((_, i) => (
                       <tr key={i} className="border-b border-neutral-50">
-                        {Array.from({ length: 7 }).map((_, j) => (
+                        {Array.from({ length: 8 }).map((_, j) => (
                           <td key={j} className="px-4 py-3">
                             <div className="h-4 skeleton rounded" />
                           </td>
@@ -649,7 +728,7 @@ export default function SuperAdminPage() {
                     ))
                   ) : users.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="text-center py-12 text-neutral-400 text-sm">
+                      <td colSpan={8} className="text-center py-12 text-neutral-400 text-sm">
                         No users found
                       </td>
                     </tr>
@@ -676,6 +755,52 @@ export default function SuperAdminPage() {
                           {new Date(user.createdAt).toLocaleDateString('en-IN', {
                             day: '2-digit', month: 'short', year: 'numeric',
                           })}
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-3">
+                            <button
+                              onClick={() => setQrTarget({ userId: user._id, name: user.name, amount: user.amount, contact: user.contact, shortCode: user.shortCode })}
+                              className="p-1.5 hover:bg-neutral-100 rounded transition-colors group"
+                              title="QR Pay"
+                            >
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-neutral-400 group-hover:text-black">
+                                <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
+                                <path d="M14 14h2v2h-2z" /><path d="M18 14h3v3h-3z" /><path d="M14 18h3v3h-3z" /><path d="M20 20h1v1h-1z" />
+                              </svg>
+                            </button>
+                            
+                            <label className="flex items-center gap-1.5 cursor-pointer" title={user.transactionStatus === 'verified' ? "Payment Verified" : "Verify & Create Poster"}>
+                              <input
+                                type="checkbox"
+                                checked={user.transactionStatus === 'verified'}
+                                disabled={instantLoading === user._id || user.transactionStatus === 'verified'}
+                                onChange={(e) => {
+                                  if (e.target.checked && user.transactionStatus !== 'verified') {
+                                    handleInstantVerify(user);
+                                  }
+                                }}
+                                className={`w-4 h-4 rounded border-neutral-300 accent-black transition-all ${user.transactionStatus === 'verified' ? 'opacity-100' : ''}`}
+                              />
+                              <span className={`text-[10px] font-bold ${user.transactionStatus === 'verified' ? 'text-green-600' : 'text-neutral-400'}`}>
+                                {instantLoading === user._id ? '...' : user.transactionStatus === 'verified' ? 'VERIFIED' : ''}
+                              </span>
+                            </label>
+                            
+                            {user.transactionStatus === 'verified' && (
+                              <button
+                                onClick={() => setPosterData({
+                                  receiptNumber: user.receiptNumber || 'PENDING',
+                                  userName: user.name,
+                                  place: user.place,
+                                  amount: user.amount,
+                                  date: user.verifiedAt || user.createdAt
+                                })}
+                                className="p-1 px-2 bg-neutral-100 hover:bg-neutral-200 rounded text-[9px] font-bold text-neutral-600 transition-colors"
+                              >
+                                VIEW POSTER
+                              </button>
+                            )}
+                          </div>
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex gap-2">
@@ -878,6 +1003,13 @@ export default function SuperAdminPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {qrTarget && (
+        <QrModal target={qrTarget} onClose={() => setQrTarget(null)} />
+      )}
+      {posterData && (
+        <ReceiptPoster data={posterData} onClose={() => setPosterData(null)} />
       )}
     </div>
   );

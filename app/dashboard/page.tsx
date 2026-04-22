@@ -32,6 +32,7 @@ interface QrTarget {
   userId: string;
   name: string;
   amount: number;
+  contact: string;
   shortCode?: string;
 }
 
@@ -118,9 +119,27 @@ function QrModal({ target, onClose }: { target: QrTarget; onClose: () => void })
     setTimeout(() => setCopiedLink(false), 2500);
   }
 
-  function handleWhatsApp() {
+  async function handleWhatsApp() {
+    let phone = target.contact.replace(/\D/g, '');
+    if (phone.length === 10) phone = '91' + phone;
     const msg = `\u200Fالسَّلَامُ عَلَيْكُمْ\n\n\u200E*Subject: Payment Reminder - Padanthara Markaz*\n\n\u200EDear *${target.name}*,\n\n\u200EWe hope this message finds you well.\n\n\u200EThis is a formal reminder that an amount of *${formatAmount(target.amount)}* is due regarding your account at Padanthara Markaz. To ensure a smooth process, please complete the payment using the link below or by scanning the QR code via any UPI app (Google Pay, PhonePe, Paytm, etc.):\n\n\u200E🔗 ${payLink}\n\n\u200EYour prompt attention to this matter is greatly appreciated. If you have already processed this payment, please disregard this message.\n\n\u200Fجَزَاكَ اللَّهُ خَيْرًا\n\n\u200E*Devarshola Abdusalam Musliyar*\n\u200E(General Secretary Padanthara Markaz)`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+    
+    try {
+      if (qrDataUrl && navigator.clipboard && window.ClipboardItem) {
+        const res = await fetch(qrDataUrl);
+        const blob = await res.blob();
+        await navigator.clipboard.write([
+          new ClipboardItem({ 'image/png': blob })
+        ]);
+        toast('QR Code copied to clipboard! Just paste it in WhatsApp.', 'success');
+      }
+    } catch (err) {
+      console.error('Clipboard copy failed:', err);
+    }
+
+    setTimeout(() => {
+      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+    }, 300);
   }
 
   return (
@@ -1069,7 +1088,7 @@ export default function DashboardPage() {
                         </p>
                         <div className="flex items-center gap-3">
                           <button
-                            onClick={() => setQrTarget({ userId: user._id, name: user.name, amount: user.amount, shortCode: user.shortCode })}
+                            onClick={() => setQrTarget({ userId: user._id, name: user.name, amount: user.amount, contact: user.contact, shortCode: user.shortCode })}
                             className="p-2 hover:bg-neutral-100 rounded-lg transition-colors group"
                             title="QR Pay"
                           >

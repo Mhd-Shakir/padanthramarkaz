@@ -19,16 +19,19 @@ export async function POST(req: NextRequest) {
 
     await connectDB();
 
-    const [user, admin] = await Promise.all([
-      User.findById(userId),
-      Admin.findById(session.adminId),
-    ]);
-
+    const user = await User.findById(userId);
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
+
+    let actualAdminId = session.adminId;
+    if (session.isSuperAdmin) {
+      actualAdminId = user.createdBy;
+    }
+
+    const admin = await Admin.findById(actualAdminId);
     if (!admin) {
-      return NextResponse.json({ error: 'Admin not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Admin not found for this user' }, { status: 404 });
     }
 
     // Create and verify transaction in one go
@@ -39,8 +42,8 @@ export async function POST(req: NextRequest) {
       status: 'verified',
       submittedAt: new Date(),
       verifiedAt: new Date(),
-      verifiedBy: admin._id,
-      notes: notes || 'Direct verification by admin',
+      verifiedBy: session.isSuperAdmin ? undefined : admin._id,
+      notes: notes || (session.isSuperAdmin ? 'Direct verification by Super Admin' : 'Direct verification by admin'),
     });
 
     await transaction.save();
